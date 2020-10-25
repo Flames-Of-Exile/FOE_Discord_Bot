@@ -1,5 +1,7 @@
 FROM python:3.8.0-alpine
 
+RUN addgroup -S app && adduser -S app -G app
+
 WORKDIR /usr/src/app
 
 RUN apk update \
@@ -18,5 +20,9 @@ COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . /usr/src/app/
+
+RUN chown -R app:app /usr/src/app/
+
+USER app
 
 ENTRYPOINT [ "python", "discordbot.py" ]
