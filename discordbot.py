@@ -8,6 +8,7 @@ import requests
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
+VERIFY_SSL = int(os.getenv('VERIFY_SSL'))
 
 bot = commands.Bot(command_prefix="!")
 
@@ -16,7 +17,6 @@ refresh_token = ''
 
 # notes
 # mention = <@id>
-# verify=false due to self signed dev certs, remove in production
 # docker-compose network-mode: host is to allow it to hit localhost
 
 
@@ -24,7 +24,7 @@ def login():
     data = json.dumps({'username': 'DiscordBot', 'password': BOT_PASSWORD})
     headers = {'Content-Type': 'application/json'}
     try:
-        response = requests.post(f'{BASE_URL}/api/users/login', data=data, headers=headers, verify=False)
+        response = requests.post(f'{BASE_URL}/api/users/login', data=data, headers=headers, verify=VERIFY_SSL)
         global auth_token, refresh_token
         auth_token = f'Bearer {response.json()["token"]}'
         refresh_token = response.cookies['refresh_token']
@@ -36,7 +36,7 @@ async def refresh():
     while True:
         await asyncio.sleep(270)
         cookies = {'refresh_token': refresh_token}
-        response = requests.get(f'{BASE_URL}/api/users/refresh', cookies=cookies, verify=False)
+        response = requests.get(f'{BASE_URL}/api/users/refresh', cookies=cookies, verify=VERIFY_SSL)
         if (response.status_code != 200):
             login()
         else:
@@ -47,6 +47,11 @@ async def refresh():
 @bot.event
 async def on_ready():
     bot.loop.create_task(refresh())
+
+
+@bot.command(name='test')
+async def test(context):
+    await context.send(f'{VERIFY_SSL}')
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -69,7 +74,7 @@ async def token_registration(context, token=None, username=None):
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-    response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=False)
+    response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send('Registration successful.')
     else:
@@ -83,7 +88,7 @@ async def token_registration(context, token=None, username=None):
 async def get_user(context):
     await context.send(f'Checking for an account belonging to {context.author.mention}...')
     headers = {'Authorization': auth_token}
-    response = requests.get(f'{BASE_URL}/api/users/discord/{context.author.id}', headers=headers, verify=False)
+    response = requests.get(f'{BASE_URL}/api/users/discord/{context.author.id}', headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send(f'User `{response.json()["username"]}` found for {context.author.mention}')
     else:
@@ -113,7 +118,8 @@ async def password_reset(context, password=None):
     await context.send('Attempting to reset your password...')
     data = json.dumps({'password': password})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-    response = requests.patch(f'{BASE_URL}/api/users/password-reset/{context.author.id}', data=data, headers=headers, verify=False)
+    id = context.author.id
+    response = requests.patch(f'{BASE_URL}/api/users/password-reset/{id}', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 404:
         await context.send(
             'No user found associated with this discord account.\n'
