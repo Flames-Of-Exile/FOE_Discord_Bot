@@ -8,7 +8,7 @@ import requests
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
-VERIFY_SSL = int(os.getenv('VERIFY_SSL'))
+VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
 
 bot = commands.Bot(command_prefix="!")
 
@@ -46,12 +46,8 @@ async def refresh():
 
 @bot.event
 async def on_ready():
+    login()
     bot.loop.create_task(refresh())
-
-
-@bot.command(name='test')
-async def test(context):
-    await context.send(f'{VERIFY_SSL}')
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -132,5 +128,4 @@ async def password_reset(context, password=None):
         await context.send(f'Password reset generated the following error:\n```{response.json()}```')
 
 if __name__ == "__main__":
-    login()
     bot.run(TOKEN)
