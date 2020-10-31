@@ -3,21 +3,24 @@ import json
 import os
 
 from discord.ext import commands
+import nest_asyncio
 import requests
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
+CHANNEL_NAME = os.getenv('CHANNEL_NAME')
+SITE_TOKEN = os.getenv('SITE_TOKEN')
 VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
 
 bot = commands.Bot(command_prefix="!")
 
 auth_token = ''
 refresh_token = ''
+web_listener = None
+channel = None
 
-# notes
-# mention = <@id>
-# docker-compose network-mode: host is to allow it to hit localhost
+nest_asyncio.apply()
 
 
 def login():
@@ -44,10 +47,35 @@ async def refresh():
             auth_token = f'Bearer {response.json()["token"]}'
 
 
+async def load_listener():
+    from webhooklistener import listener
+    global web_listener
+    web_listener = listener
+    bot.loop.run_until_complete(web_listener.start())
+#     web_listener.on('get', get_test)
+#     web_listener.on('post', post_test)
+
+
+# async def get_test():
+#     await channel.send('get_test')
+
+
+# async def post_test(json):
+#     if json['token'] == SITE_TOKEN:
+#         await channel.send(json['key'])
+
+
 @bot.event
 async def on_ready():
+    global channel
+    text_channels = channel = bot.get_all_channels().__next__().text_channels
+    for chan in text_channels:
+        if chan.name == CHANNEL_NAME:
+            channel = chan
+            break
     login()
     bot.loop.create_task(refresh())
+    bot.loop.create_task(load_listener())
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -126,6 +154,7 @@ async def password_reset(context, password=None):
         await context.send('Your password has been changed.')
     else:
         await context.send(f'Password reset generated the following error:\n```{response.json()}```')
+
 
 if __name__ == "__main__":
     bot.run(TOKEN)

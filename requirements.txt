@@ -1,2 +1,5 @@
-discord
-requests
+aiohttp==3.7.2
+discord==1.0.1
+eventemitter==0.2.0
+nest-asyncio==1.4.2
+requests==2.24.0
