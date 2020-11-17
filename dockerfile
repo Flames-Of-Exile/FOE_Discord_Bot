@@ -19,10 +19,16 @@ RUN pip install --upgrade pip \
 COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
+COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
+
+RUN chmod 700 /usr/src/app/entrypoint.sh
+
 COPY . /usr/src/app/
 
 RUN chown -R app:app /usr/src/app/
 
 USER app
 
-ENTRYPOINT [ "python", "discordbot.py" ]
+ENTRYPOINT ["sh", "/usr/src/app/entrypoint.sh"]
+
+CMD ["python", "discordbot.py"]
