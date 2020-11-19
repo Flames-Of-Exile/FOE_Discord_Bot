@@ -54,7 +54,7 @@ async def load_listener():
     bot.loop.run_until_complete(web_listener.start())
 #     web_listener.on('get', get_test)
 #     web_listener.on('post', post_test)
-    web_listener.on('bot/verified', verified_notification)
+    web_listener.on('verified', verified_notification)
 
 # async def get_test():
 #     await channel.send('get_test')
