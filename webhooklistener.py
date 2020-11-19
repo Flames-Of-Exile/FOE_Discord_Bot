@@ -33,3 +33,4 @@ async def post_registered(req):
     notification to discord alerting admins that a new 
     registration has been verified on the web site'''
     listener.emit('verified', await req.json())
+    return 200
