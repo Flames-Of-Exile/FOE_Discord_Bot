@@ -66,9 +66,10 @@ async def load_listener():
 
 async def verified_notification(json):
     if json['token'] == SITE_TOKEN:
-        await channel.send(
+        await CHANNEL_NAME.send(
             f'@admin There is a new user that has verified their account on the website.'
         )
+        return
 
 
 
