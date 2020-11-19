@@ -27,7 +27,7 @@ async def get_root(req):
 async def post_root(req):
     listener.emit('post', await req.json())
 
-@routes.post('/verified')
+@routes.post('/bot/verified')
 async def post_registered(req):
     '''this method is used to cause the bot to push a 
     notification to discord alerting admins that a new 
