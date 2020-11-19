@@ -52,17 +52,17 @@ async def load_listener():
     global web_listener
     web_listener = listener
     bot.loop.run_until_complete(web_listener.start())
-#     web_listener.on('get', get_test)
-#     web_listener.on('post', post_test)
+    web_listener.on('get', get_test)
+    web_listener.on('post', post_test)
     web_listener.on('verified', verified_notification)
 
-# async def get_test():
-#     await channel.send('get_test')
+async def get_test():
+    await channel.send('get_test')
 
 
-# async def post_test(json):
-#     if json['token'] == SITE_TOKEN:
-#         await channel.send(json['key'])
+async def post_test(json):
+    if json['token'] == SITE_TOKEN:
+        await channel.send(json['key'])
 
 async def verified_notification(json):
     if json['token'] == SITE_TOKEN:
