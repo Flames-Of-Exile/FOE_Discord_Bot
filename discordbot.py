@@ -66,8 +66,8 @@ async def post_test(json):
 
 async def verified_notification(json):
     if json['token'] == SITE_TOKEN:
-        await CHANNEL_NAME.send(
-            '@admin There is a new user that has verified their account on the website.'
+        await channel.send(
+            'admin There is a new user that has verified their account on the website.'
         )
 
 
