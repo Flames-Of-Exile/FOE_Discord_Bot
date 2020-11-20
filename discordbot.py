@@ -52,24 +52,16 @@ async def load_listener():
     global web_listener
     web_listener = listener
     bot.loop.run_until_complete(web_listener.start())
-    web_listener.on('get', get_test)
-    web_listener.on('post', post_test)
-    web_listener.on('verified', verified_notification)
+#     web_listener.on('get', get_test)
+#     web_listener.on('post', post_test)
 
-async def get_test():
-    await channel.send('get_test')
+# async def get_test():
+#     await channel.send('get_test')
 
 
-async def post_test(json):
-    if json['token'] == SITE_TOKEN:
-        await channel.send(json['key'])
-
-async def verified_notification(json):
-    if json['token'] == SITE_TOKEN:
-        await channel.send(
-            'admin There is a new user that has verified their account on the website.'
-        )
-        return
+# async def post_test(json):
+#     if json['token'] == SITE_TOKEN:
+#         await channel.send(json['key'])
 
 
 
@@ -109,6 +101,7 @@ async def token_registration(context, token=None, username=None):
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send('Registration successful.')
+        await channel.send(f'@SYSOPS {username} has verified their registration and needs privs')
     if response.status_code == 504:
         await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
                             + 'in the flames of Exile server to let them know you need privilages')
