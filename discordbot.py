@@ -55,7 +55,6 @@ async def load_listener():
 #     web_listener.on('get', get_test)
 #     web_listener.on('post', post_test)
 
-
 # async def get_test():
 #     await channel.send('get_test')
 
@@ -63,6 +62,7 @@ async def load_listener():
 # async def post_test(json):
 #     if json['token'] == SITE_TOKEN:
 #         await channel.send(json['key'])
+
 
 
 @bot.event
@@ -101,6 +101,10 @@ async def token_registration(context, token=None, username=None):
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send('Registration successful.')
+        await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and needs privs')
+    elif response.status_code == 504:
+        await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
+                            + 'in the flames of Exile server to let them know you need privilages')
     else:
         await context.send(
             'There was an issue with your registration. Please doublecheck the information you provided'
