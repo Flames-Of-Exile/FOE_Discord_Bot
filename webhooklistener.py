@@ -18,13 +18,11 @@ listener = WebHookListener()
 routes = web.RouteTableDef()
 
 
-# @routes.get('/bot')
-# async def get_root(req):
-#     listener.emit('get')
-#     return web.Response(text='ok')
+@routes.get('/')
+async def get_root(req):
+    listener.emit('get')
 
 
-# @routes.post('/bot')
-# async def post_root(req):
-#     listener.emit('post', await req.json())
-#     return web.Response(text='ok')
+@routes.post('/')
+async def post_root(req):
+    listener.emit('post', await req.json())
