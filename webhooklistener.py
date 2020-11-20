@@ -18,21 +18,13 @@ listener = WebHookListener()
 routes = web.RouteTableDef()
 
 
-@routes.get('/bot')
-async def get_root(req):
-    listener.emit('get')
-    return web.Response(text='ok')
+# @routes.get('/bot')
+# async def get_root(req):
+#     listener.emit('get')
+#     return web.Response(text='ok')
 
 
-@routes.post('/bot')
-async def post_root(req):
-    listener.emit('post', await req.json())
-    return web.Response(text='ok')
-
-@routes.get('/bot/verified')
-async def post_registered(req):
-    '''this method is used to cause the bot to push a 
-    notification to discord alerting admins that a new 
-    registration has been verified on the web site'''
-    listener.emit('verified', await req.json())
-    return web.Response(text='ok')
+# @routes.post('/bot')
+# async def post_root(req):
+#     listener.emit('post', await req.json())
+#     return web.Response(text='ok')
