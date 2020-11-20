@@ -102,7 +102,7 @@ async def token_registration(context, token=None, username=None):
     if response.status_code == 200:
         await context.send('Registration successful.')
         await channel.send(f'@SYSOPS {username} has verified their registration and needs privs')
-    if response.status_code == 504:
+    elif response.status_code == 504:
         await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
                             + 'in the flames of Exile server to let them know you need privilages')
     else:
