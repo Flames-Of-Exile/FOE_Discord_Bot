@@ -21,11 +21,13 @@ routes = web.RouteTableDef()
 @routes.get('/bot')
 async def get_root(req):
     listener.emit('get')
+    return web.Response(text='ok')
 
 
 @routes.post('/bot')
 async def post_root(req):
     listener.emit('post', await req.json())
+    return web.Response(text='ok')
 
 @routes.get('/bot/verified')
 async def post_registered(req):
@@ -33,4 +35,4 @@ async def post_registered(req):
     notification to discord alerting admins that a new 
     registration has been verified on the web site'''
     listener.emit('verified', await req.json())
-    return 200
+    return web.Response(text='ok')
