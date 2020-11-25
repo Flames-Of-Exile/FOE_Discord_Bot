@@ -3,6 +3,7 @@ import json
 import os
 
 from discord.ext import commands
+import discord
 import nest_asyncio
 import requests
 
@@ -10,15 +11,20 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
 CHANNEL_NAME = os.getenv('CHANNEL_NAME')
+_BROADCAST_CHANNEL = os.getenv('BROADCAST')
 SITE_TOKEN = os.getenv('SITE_TOKEN')
 VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
+_ADMIN_ROLE = os.getenv('ADMIN_ROLE')
+_MEMBER_ROLE = os.getenv('MEMBER_ROLE')
 
 bot = commands.Bot(command_prefix="!")
+client = discord.Client()
 
 auth_token = ''
 refresh_token = ''
 web_listener = None
 channel = None
+brodcast = None
 
 nest_asyncio.apply()
 
@@ -68,10 +74,14 @@ async def load_listener():
 @bot.event
 async def on_ready():
     global channel
+    global brodcast
     text_channels = channel = bot.get_all_channels().__next__().text_channels
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
+        if chan.name == _BROADCAST_CHANNEL:
+            brodcast = chan
+        if brodcast and channel:
             break
     login()
     bot.loop.create_task(refresh())
@@ -96,12 +106,19 @@ async def token_registration(context, token=None, username=None):
             )
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
-    data = json.dumps({'token': token, 'username': username, 'discord': context.author.id})
+    member = False
+    if context.author.roles.cache.has('512198365598056451'):
+        member = True
+    data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send('Registration successful.')
-        await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and needs privs')
+        if member == False:
+            await context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
+            await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
+        else:
+            await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and has been assigned roles on flamesofexile.com')
     elif response.status_code == 504:
         await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
                             + 'in the flames of Exile server to let them know you need privilages')
@@ -158,6 +175,25 @@ async def password_reset(context, password=None):
         await context.send('Your password has been changed.')
     else:
         await context.send(f'Password reset generated the following error:\n```{response.json()}```')
+
+@client.event
+async def on_member_update(before,after):
+    '''this method eceves an event from the discord client when a user role is added or removed
+    this allows it to see if a member lost privalages and react acordingly'''
+    #current functionality includes revoking website privs if a member loses their 'FOE Member' tag
+    if len(before.roles) > len(after.roles):
+        #if the user lost roles check to see if they have 'FOE Member' remove website privs if not
+        if [i.id for i in after.roles].count(512198365598056451):
+            try:
+                data=json.dumps({'is_active': False})
+                headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+                responce = await requests.put(f'{BASE_URL}/api/users/discordRoles{after.id}', data=data, headers=headers, verify=VERIFY_SSL)
+                if responce == 200:
+                    await channel.send(f'{after.mention} has had their roles striped from flamesofexile.com.')
+                else:
+                    await channel.send(f'a problem ocured removing roles from {after.mention} manual removal may be nessicary.')
+            except:
+                await channel.send(f'a problem ocured removing roles from {after.mention} manual removal may be nessicary.')
 
 
 if __name__ == "__main__":
