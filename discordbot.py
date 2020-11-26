@@ -130,6 +130,8 @@ async def token_registration(context, token=None, username=None):
     elif response.status_code == 504:
         await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
                             + 'in the flames of Exile server to let them know you need privilages')
+    elif response.status_code == 208:
+        await context.send('You have already confirmed your registration')
     else:
         await context.send(
             'There was an issue with your registration. Please doublecheck the information you provided'
