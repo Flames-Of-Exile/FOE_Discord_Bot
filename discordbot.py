@@ -83,6 +83,7 @@ async def on_ready():
             brodcast = chan
         if brodcast and channel:
             break
+    await channel.send('found channels')
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
