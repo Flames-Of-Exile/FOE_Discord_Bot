@@ -88,6 +88,8 @@ async def on_ready():
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
+    if channel and brodcast:
+        await brodcast.send('logged in and found channels')
 
 
 @bot.command(name='register', help='Website registration instructions.')
