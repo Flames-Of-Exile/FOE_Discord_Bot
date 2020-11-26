@@ -20,9 +20,9 @@ _ADMIN_ROLE = os.getenv('ADMIN_ROLE')
 _MEMBER_ROLE = os.getenv('MEMBER_ROLE')
 
 log = logging.getLogger('discord')
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+handler.setFormatter(f'%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 log.addHandler(handler)
 
 
