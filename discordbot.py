@@ -39,6 +39,8 @@ def login():
         refresh_token = response.cookies['refresh_token']
         if response.status_code == 200:
             channel.send('bot logged in and ready to go')
+        else:
+            channel.send('bot failed to loggin')
     except requests.exceptions.RequestException:
         pass
 
