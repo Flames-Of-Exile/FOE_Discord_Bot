@@ -108,7 +108,7 @@ async def token_registration(context, token=None, username=None):
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     member = False
-     if _MEMBER_ROLE in [role for role.name in context.author.roles]:
+    if _MEMBER_ROLE in [role for role.name in context.author.roles]:
          member = True
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
