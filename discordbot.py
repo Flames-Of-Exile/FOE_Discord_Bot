@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import logging
 
 from discord.ext import commands
 import discord
@@ -16,6 +17,13 @@ SITE_TOKEN = os.getenv('SITE_TOKEN')
 VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
 _ADMIN_ROLE = os.getenv('ADMIN_ROLE')
 _MEMBER_ROLE = os.getenv('MEMBER_ROLE')
+
+log = logging.getLogger('discord')
+log.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+log.addHandler(handler)
+
 
 bot = commands.Bot(command_prefix="!")
 client = discord.Client()
