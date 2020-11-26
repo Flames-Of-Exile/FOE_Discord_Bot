@@ -106,14 +106,14 @@ async def token_registration(context, token=None, username=None):
             )
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
-    print('bot receved request to confirm user registration')
     member = False
     if context.author.roles.cache.has.name(_MEMBER_ROLE):
         member = True
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-    print('sending request to api')
+    await channel.send('sending request to api')
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
+    await brodcast.send('receved responce from backend')
     if response.status_code == 200:
         await context.send('Registration successful.')
         if member == False:
