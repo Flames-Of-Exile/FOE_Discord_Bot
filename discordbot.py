@@ -108,10 +108,13 @@ async def token_registration(context, token=None, username=None):
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     member = False
-    user = client.users.find('id', context.author.id)
-    await context.send('found user in roles')
-    if _MEMBER_ROLE in [role.name for role in user.roles]:
-         member = True
+    try:
+        user = client.users.find('id', context.author.id)
+        await context.send('found user in roles')
+        if _MEMBER_ROLE in [role.name for role in user.roles]:
+            member = True
+    except:
+        await channel.send(f'failed to obtain user for {context.author.mention}')
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
     await channel.send('sending request to api')
