@@ -37,6 +37,8 @@ def login():
         global auth_token, refresh_token
         auth_token = f'Bearer {response.json()["token"]}'
         refresh_token = response.cookies['refresh_token']
+        if response.status_code == 200:
+            channel.send('bot logged in and ready to go')
     except requests.exceptions.RequestException:
         pass
 
