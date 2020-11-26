@@ -32,18 +32,10 @@ nest_asyncio.apply()
 def login():
     data = json.dumps({'username': 'DiscordBot', 'password': BOT_PASSWORD})
     headers = {'Content-Type': 'application/json'}
-    try:
-        response = requests.post(f'{BASE_URL}/api/users/login', data=data, headers=headers, verify=VERIFY_SSL)
-        global auth_token, refresh_token
-        auth_token = f'Bearer {response.json()["token"]}'
-        refresh_token = response.cookies['refresh_token']
-        if response.status_code == 200:
-            channel.send('bot logged in and ready to go')
-        else:
-            channel.send('bot failed to login')
-    except requests.exceptions.RequestException:
-        channel.send('exception raised by login process')
-
+    response = requests.post(f'{BASE_URL}/api/users/login', data=data, headers=headers, verify=VERIFY_SSL)
+    global auth_token, refresh_token
+    auth_token = f'Bearer {response.json()["token"]}'
+    refresh_token = response.cookies['refresh_token']
 
 async def refresh():
     while True:
