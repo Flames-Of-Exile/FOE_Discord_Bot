@@ -83,7 +83,7 @@ async def on_ready():
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
     if channel and brodcast:
-        await brodcast.send('logged in and found channels')
+        brodcast.send('logged in and found channels')
         await channel.send('logged in and found channels')
 
 
