@@ -102,6 +102,13 @@ async def register_instructions(context):
         )
     await context.send(f'{context.author.mention} Check your DMs for instructions.')
 
+@bot.command(name='status', help='returns the loggin status of the bot')
+async def get_status(context):
+    if refresh_token:
+        await context.send('the bot IS logged in')
+    else:
+        await context.send('The bot is NOT logged in')
+
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
