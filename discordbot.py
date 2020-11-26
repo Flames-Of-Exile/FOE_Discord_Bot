@@ -114,7 +114,7 @@ async def get_status(context):
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
 async def token_registration(context, token=None, username=None):
-    log.debug('token_registration called')
+    log.info('token_registration called')
     if token is None or username is None:
         await context.send(
             'Token and username are required. Please send them with the following command: `!token yourtoken yourusername`'
@@ -124,15 +124,15 @@ async def token_registration(context, token=None, username=None):
     member = False
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-    log.debug('sending request to api/confirm')
+    log.info('sending request to api/confirm')
     try:
         response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
-        log.debug('request sent to api/confirm')
+        log.info('request sent to api/confirm')
         if response.status_code == 200:
             await context.send('Registration successful.')
             if member == False:
-                await context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
-                await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
+                context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
+                channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
             else:
                 await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and has been assigned roles on flamesofexile.com')
         elif response.status_code == 504:
