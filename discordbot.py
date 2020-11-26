@@ -89,8 +89,8 @@ async def on_ready():
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
     if channel and brodcast:
-        brodcast.send('logged in and found channels')
-        channel.send('logged in and found channels')
+        await brodcast.send('logged in and found channels')
+        await channel.send('logged in and found channels')
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -129,8 +129,8 @@ async def token_registration(context, token=None, username=None):
         if response.status_code == 200:
             await context.send('Registration successful.')
             if member == False:
-                context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
-                channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
+                await context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
+                await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
             else:
                 await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and has been assigned roles on flamesofexile.com')
         elif response.status_code == 504:
