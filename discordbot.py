@@ -108,7 +108,7 @@ async def token_registration(context, token=None, username=None):
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     member = False
-    user = client.users.find('username', context.author.username)
+    user = client.users.find('id', context.author.id)
     await context.send('found user in roles')
     if _MEMBER_ROLE in [role.name for role in user.roles]:
          member = True
