@@ -79,11 +79,12 @@ async def on_ready():
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
+            await channel.send('found channel')
         if chan.name == _BROADCAST_CHANNEL:
             brodcast = chan
+            await brodcast.send('found broadcast')
         if brodcast and channel:
             break
-    await channel.send('found channels')
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
@@ -118,7 +119,7 @@ async def token_registration(context, token=None, username=None):
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
     await channel.send('sending request to api')
-    response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
+    response = await requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     await brodcast.send('receved responce from backend')
     if response.status_code == 200:
         await context.send('Registration successful.')
