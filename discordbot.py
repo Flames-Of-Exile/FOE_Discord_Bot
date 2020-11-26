@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import logging
+import sys
 
 from discord.ext import commands
 import discord
