@@ -83,10 +83,8 @@ async def on_ready():
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
-            await channel.send('found channel')
         if chan.name == _BROADCAST_CHANNEL:
             brodcast = chan
-            await brodcast.send('found broadcast')
         if brodcast and channel:
             break
     login()
