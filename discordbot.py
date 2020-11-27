@@ -1,6 +1,8 @@
 import asyncio
 import json
 import os
+import sys
+import logging
 
 from discord.ext import commands
 import nest_asyncio
@@ -9,9 +11,19 @@ import requests
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
-CHANNEL_NAME = os.getenv('CHANNEL_NAME')
 SITE_TOKEN = os.getenv('SITE_TOKEN')
 VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
+
+CHANNEL_NAME = os.getenv('CHANNEL_NAME')
+_BROADCAST_CHANNEL = os.getenv('BROADCAST')
+_ADMIN_ROLE = os.getenv('ADMIN_ROLE')
+_MEMBER_ROLE = os.getenv('MEMBER_ROLE')
+
+log = logging.getLogger('discord')
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+log.addHandler(handler)
+
 
 bot = commands.Bot(command_prefix="!")
 
@@ -19,20 +31,23 @@ auth_token = ''
 refresh_token = ''
 web_listener = None
 channel = None
+brodcast = None
 
 nest_asyncio.apply()
 
 
 def login():
+    log.info('login called')
     data = json.dumps({'username': 'DiscordBot', 'password': BOT_PASSWORD})
     headers = {'Content-Type': 'application/json'}
     try:
         response = requests.post(f'{BASE_URL}/api/users/login', data=data, headers=headers, verify=VERIFY_SSL)
+        log.info('request send from bot to /login')
         global auth_token, refresh_token
         auth_token = f'Bearer {response.json()["token"]}'
         refresh_token = response.cookies['refresh_token']
     except requests.exceptions.RequestException:
-        pass
+        log.info('exception logged in login')
 
 
 async def refresh():
@@ -68,14 +83,35 @@ async def load_listener():
 @bot.event
 async def on_ready():
     global channel
+    global brodcast
     text_channels = channel = bot.get_all_channels().__next__().text_channels
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
-            break
+        if chan.name == _BROADCAST_CHANNEL:
+            brodcast = chan
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
+    if refresh_token:
+        log.info('Bot logged in')
+    else:
+        log.info('Bot failed to login')
+
+@bot.command(name='status', help='returns the loggin status of the bot')
+async def get_status(context):
+    if refresh_token:
+        await context.send('the bot IS logged in')
+    else:
+        await context.send('The bot is NOT logged in')
+
+@bot.command(name='login')
+@commands.dm_only()
+async def force_login(context):
+    if not refresh_token:
+        login()
+    else:
+        context.send('the bot is already logged in')
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -96,12 +132,20 @@ async def token_registration(context, token=None, username=None):
             )
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
-    data = json.dumps({'token': token, 'username': username, 'discord': context.author.id})
+    member = False
+    target_user = bot.get_user(context.author.id)
+    if target_user.permissions_in(brodcast):
+        member = True
+    data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
-        await context.send('Registration successful.')
-        await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and needs privs')
+        if member:
+            await context.send('Registration successful, you have been granted your permissions to flamesofexile.com')
+            await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and has been granted privilages on flamesofexile.com')
+        else:
+            await context.send('You have successfully registered but you do not currently have member permissions, contact "@SysOp" to figure out why you don\'t have permissons')
+            await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not currently have access')
     elif response.status_code == 504:
         await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
                             + 'in the flames of Exile server to let them know you need privilages')
