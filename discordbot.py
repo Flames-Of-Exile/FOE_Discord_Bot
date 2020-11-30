@@ -91,9 +91,6 @@ async def on_ready():
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
-    if channel and broadcast:
-        await broadcast.send('logged in and found channels')
-        await channel.send('logged in and found channels')
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -197,25 +194,6 @@ async def password_reset(context, password=None):
         await context.send('Your password has been changed.')
     else:
         await context.send(f'Password reset generated the following error:\n```{response.json()}```')
-
-@client.event
-async def on_member_update(before,after):
-    '''this method eceves an event from the discord client when a user role is added or removed
-    this allows it to see if a member lost privalages and react acordingly'''
-    #current functionality includes revoking website privs if a member loses their 'FOE Member' tag
-    if len(before.roles) > len(after.roles):
-        #if the user lost roles check to see if they have 'FOE Member' remove website privs if not
-        if [i.id for i in after.roles].count(512198365598056451):
-            try:
-                data=json.dumps({'is_active': False})
-                headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-                responce = await requests.put(f'{BASE_URL}/api/users/discordRoles{after.id}', data=data, headers=headers, verify=VERIFY_SSL)
-                if responce == 200:
-                    await channel.send(f'{after.mention} has had their roles striped from flamesofexile.com.')
-                else:
-                    await channel.send(f'a problem ocured removing roles from {after.mention} manual removal may be nessicary.')
-            except:
-                await channel.send(f'a problem ocured removing roles from {after.mention} manual removal may be nessicary.')
 
 
 if __name__ == "__main__":
