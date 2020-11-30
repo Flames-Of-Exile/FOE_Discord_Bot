@@ -32,7 +32,7 @@ auth_token = ''
 refresh_token = ''
 web_listener = None
 channel = None
-brodcast = None
+broadcast = None
 
 nest_asyncio.apply()
 
@@ -78,18 +78,18 @@ async def load_listener():
 @bot.event
 async def on_ready():
     global channel
-    global brodcast
+    global broadcast
     text_channels = channel = bot.get_all_channels().__next__().text_channels
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
         if chan.name == _BROADCAST_CHANNEL:
-            brodcast = chan
+            broadcast = chan
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
-    if channel and brodcast:
-        await brodcast.send('logged in and found channels')
+    if channel and broadcast:
+        await broadcast.send('logged in and found channels')
         await channel.send('logged in and found channels')
 
 
