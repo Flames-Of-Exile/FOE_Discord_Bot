@@ -5,6 +5,7 @@ import sys
 import logging
 
 from discord.ext import commands
+import discord
 import nest_asyncio
 import requests
 
@@ -98,12 +99,29 @@ async def on_ready():
     else:
         log.info('Bot failed to login')
 
+@bot.command(name='ban')
+async def banish_member(context, member=None):
+    user_roles = context.author.roles
+    if _ADMIN_ROLE in [role.name for role in user_roles]:
+        users = bot.users
+        user = [user for user in users if user.name == member]
+        log.info(context.author.id)
+        log.info(user[0].id)
+        log.info(context.guild.members)
+        
+
+
+
 @bot.command(name='status', help='returns the loggin status of the bot')
 async def get_status(context):
     if refresh_token:
         await context.send('the bot IS logged in')
     else:
         await context.send('The bot is NOT logged in')
+    if channel:
+        await channel.send('channel is registered as channel')
+    if brodcast:
+        await brodcast.send('channel is registered as brodcast')
 
 @bot.command(name='login')
 @commands.dm_only()
@@ -161,6 +179,7 @@ async def get_user(context):
     await context.send(f'Checking for an account belonging to {context.author.mention}...')
     headers = {'Authorization': auth_token}
     response = requests.get(f'{BASE_URL}/api/users/discord/{context.author.id}', headers=headers, verify=VERIFY_SSL)
+    log.info(context.author.roles)
     if response.status_code == 200:
         await context.send(f'User `{response.json()["username"]}` found for {context.author.mention}')
     else:
