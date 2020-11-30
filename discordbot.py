@@ -120,7 +120,7 @@ async def token_registration(context, token=None, username=None):
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     member = False
-    target_user = bot.get_user(context.author.id)
+    target_user = bot.get_member(context.author.id)
     log.info(target_user)
     if target_user.permissions_in(_BROADCAST_CHANNEL):
         member = True
