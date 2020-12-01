@@ -64,7 +64,6 @@ async def load_listener():
 #         await channel.send(json['key'])
 
 
-
 @bot.event
 async def on_ready():
     global channel
@@ -101,10 +100,11 @@ async def token_registration(context, token=None, username=None):
     response = requests.put(f'{BASE_URL}/api/users/confirm', data=data, headers=headers, verify=VERIFY_SSL)
     if response.status_code == 200:
         await context.send('Registration successful.')
-        await channel.send(f'@SYSOPS {context.author.id} has verified their registration for account {username} and needs privs')
+        await channel.send(f'&SysOp {context.author.id} has verified their registration' +
+                           f'for account {username} and needs privileges')
     elif response.status_code == 504:
-        await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
-                            + 'in the flames of Exile server to let them know you need privilages')
+        await context.send('You have successfully confirmed your registration please ping "@sysOpp"' +
+                           'in the flames of Exile server to let them know you need privilages')
     else:
         await context.send(
             'There was an issue with your registration. Please doublecheck the information you provided'
