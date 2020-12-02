@@ -121,7 +121,7 @@ async def get_member_status(context, name=None):
             responce += f'Admin'
         await context.send(responce)
     else:
-        await context.send(you must provide a member name in order to use a find query.)
+        await context.send('you must provide a member name in order to use a find query.')
 
 @bot.command(name='BAN', help='allows a ChatMod to boot a member from the discord, also removes flamesofexile.com access')
 async def ban_member(context, name=None, reason=None):
@@ -163,7 +163,7 @@ async def ban_member(context, name=None, reason=None):
     except HTTPException:
         context.send('An error was encountered NO USER Privilages have been modified.')
     except IntegrityError:
-        context.send(f'{member.mention} has been banned but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
+        context.send(f'{member.mention} has been exiled but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
