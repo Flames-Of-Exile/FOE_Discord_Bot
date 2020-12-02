@@ -24,9 +24,9 @@ log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 log.addHandler(handler)
 
-
-bot = commands.Bot(command_prefix="!")
-client = discord.Client(intents=intents)
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 auth_token = ''
 refresh_token = ''
@@ -107,14 +107,10 @@ async def get_status(context):
     else:
         await context.send('The bot is NOT logged in')
 
-
-@bot.command(name='status', help='returns the loggin status of the bot')
-async def get_status(context):
-    if refresh_token:
-        await context.send('the bot IS logged in')
-    else:
-        await context.send('The bot is NOT logged in')
-
+@bot.command(name='find', help='returns information about a server member')
+async def get_status(context, name=None)
+    if name:
+        log.info(bot.guild.members)
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
@@ -139,16 +135,6 @@ async def token_registration(context, token=None, username=None):
         log.info('request sent to api/confirm')
         if response.status_code == 200:
             await context.send('Registration successful.')
-<<<<<<< HEAD
-            if member == False:
-                await context.send('You do not yet have a Member tag if you are not yet a member of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
-                await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} but does not has not yet been assigned member roles yet')
-            else:
-                await channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration for account {username} and has been assigned roles on flamesofexile.com')
-        elif response.status_code == 504:
-            await context.send('You have successfully confirmed your registration please ping "@sysOpp"' 
-                                + 'in the flames of Exile server to let them know you need privilages')
-=======
             if member is False:
                 await context.send('You do not yet have a Member tag if you are not yet a member ' +
                                    'of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
@@ -160,7 +146,6 @@ async def token_registration(context, token=None, username=None):
         elif response.status_code == 504:
             await context.send('You have successfully confirmed your registration please ping "@sysOpp"' +
                                'in the flames of Exile server to let them know you need privilages')
->>>>>>> f94bc34d237dc4955fea8e277c0099c75ee23f60
         elif response.status_code == 208:
             await context.send('You have already confirmed your registration')
         else:
@@ -168,18 +153,11 @@ async def token_registration(context, token=None, username=None):
                 'There was an issue with your registration. Please doublecheck the information you provided'
                 'and try again. If the problem persists, please contact an administrator.'
                 )
-<<<<<<< HEAD
-    except:
-        await channel.send('there was an issue with your registration please try again later. '
-                           'If the problem persists please contact an administrator')
-        log.debug('exception raised durring request to api/confirm')
-=======
     except requests.exceptions.RequestException:
         await channel.send('there was an issue with your registration please try again later. '
                            'If the problem persists please contact an administrator')
         log.debug('exception raised durring request to api/confirm')
 
->>>>>>> f94bc34d237dc4955fea8e277c0099c75ee23f60
 
 @bot.command(name='whoami', help='Get your website username.')
 async def get_user(context):
