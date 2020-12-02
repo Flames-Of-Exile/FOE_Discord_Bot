@@ -26,7 +26,7 @@ log.addHandler(handler)
 
 
 bot = commands.Bot(command_prefix="!")
-client = discord.Client()
+client = discord.Client(intents=intents)
 
 auth_token = ''
 refresh_token = ''
