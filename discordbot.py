@@ -85,7 +85,7 @@ async def load_listener():
 async def on_ready():
     global channel
     global broadcast
-    global server = bot.get_guild(_SERVER_ID)
+    global server
     global admin_role
     global member_role
     text_channels = channel = bot.get_all_channels().__next__().text_channels
@@ -94,6 +94,7 @@ async def on_ready():
             channel = chan
         if chan.name == _BROADCAST_CHANNEL:
             broadcast = chan
+    server = bot.get_guild(_SERVER_ID)
     roles = server.roles
     for role in roles:
         if role.name == _ADMIN_ROLE:
@@ -122,7 +123,7 @@ async def get_status(context):
         await context.send('The bot is NOT logged in')
 
 @bot.command(name='find', help='returns information about a server member')
-async def get_status(context, name=None):
+async def get_member_status(context, name=None):
     if name:
         member_lst = [member for member in context.guild.members if name == member.name]
         member = member_lst[0]
@@ -132,6 +133,7 @@ async def get_status(context, name=None):
             responce += f'{member_role.mention} '
         if admin_role in member.roles:
             responce += f'{admin_role.mention}'
+        await context.send(responce)
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
