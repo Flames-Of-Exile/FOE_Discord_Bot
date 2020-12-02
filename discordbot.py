@@ -110,7 +110,7 @@ async def get_status(context):
 @bot.command(name='find', help='returns information about a server member')
 async def get_status(context, name=None):
     if name:
-        log.info(bot.guild.members)
+        log.info(bot.members)
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
