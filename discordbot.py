@@ -120,6 +120,50 @@ async def get_member_status(context, name=None):
         if _ADMIN_ROLE in member_roles:
             responce += f'Admin'
         await context.send(responce)
+    else:
+        await context.send(you must provide a member name in order to use a find query.)
+
+@bot.command(name='BAN', help='allows a ChatMod to boot a member from the discord, also removes flamesofexile.com access')
+async def ban_member(context, name=None, reason=None):
+    try:
+        member_lst = [member for member in context.guild.members if name == member.name]
+        member = member_lst[0]
+        if _ADMIN_ROLE in context.author.roles and member:
+            await context.guild.ban(member, reason=None)
+            data = json.dumps('is_active': False)
+            headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+            responce = await requests.PATCH(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+            if responce.status_code == 200:
+                context.send(f'{member.mention} has been banned and their roles have been revoked from flamesofexile.com')
+            else:
+                raise IntegrityError
+        else:
+            context.send('You do not have the authority to invoke this acction')
+    except HTTPException:
+        context.send('An error was encountered NO USER Privilages have been modified.')
+    except IntegrityError:
+        context.send(f'{member.mention} has been banned but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
+
+@bot.command(name='EXILE', help='allows a ChatMod to boot a member from the discord, also removes flamesofexile.com access')
+async def ban_member(context, name=None, reason=None):
+    try:
+        member_lst = [member for member in context.guild.members if name == member.name]
+        member = member_lst[0]
+        if _ADMIN_ROLE in context.author.roles and member:
+            await member.remove_roles(_MEMBER_ROLE)
+            data = json.dumps('is_active': False)
+            headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+            responce = await requests.PATCH(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+            if responce.status_code == 200:
+                context.send(f'{member.mention} has been banned and their roles have been revoked from flamesofexile.com')
+            else:
+                raise IntegrityError
+        else:
+            context.send('You do not have the authority to invoke this acction')
+    except HTTPException:
+        context.send('An error was encountered NO USER Privilages have been modified.')
+    except IntegrityError:
+        context.send(f'{member.mention} has been banned but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
