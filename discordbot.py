@@ -16,6 +16,7 @@ CHANNEL_NAME = os.getenv('CHANNEL_NAME')
 _BROADCAST_CHANNEL = os.getenv('BROADCAST')
 SITE_TOKEN = os.getenv('SITE_TOKEN')
 VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
+_SERVER_ID = os.getenv('SERVER_ID')
 _ADMIN_ROLE = os.getenv('ADMIN_ROLE')
 _MEMBER_ROLE = os.getenv('MEMBER_ROLE')
 
@@ -33,6 +34,9 @@ refresh_token = ''
 web_listener = None
 channel = None
 broadcast = None
+admin_role = None
+member_role = None
+server = None
 
 nest_asyncio.apply()
 
@@ -81,12 +85,21 @@ async def load_listener():
 async def on_ready():
     global channel
     global broadcast
+    global server = bot.get_guild(_SERVER_ID)
+    global admin_role
+    global member_role
     text_channels = channel = bot.get_all_channels().__next__().text_channels
     for chan in text_channels:
         if chan.name == CHANNEL_NAME:
             channel = chan
         if chan.name == _BROADCAST_CHANNEL:
             broadcast = chan
+    roles = server.roles
+    for role in roles:
+        if role.name == _ADMIN_ROLE:
+            admin_role = role
+        if role.name == _MEMBER_ROLE:
+            member_role = role
     
     login()
     bot.loop.create_task(refresh())
@@ -114,6 +127,11 @@ async def get_status(context, name=None):
         member_lst = [member for member in context.guild.members if name == member.name]
         member = member_lst[0]
         log.info(context.guild.roles)
+        responce = f'found member {member.mention} with roles '
+        if member_role in member.roles:
+            responce += f'{member_role.mention} '
+        if admin_role in member.roles:
+            responce += f'{admin_role.mention}'
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
