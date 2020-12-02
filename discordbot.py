@@ -108,7 +108,7 @@ async def get_status(context):
         await context.send('The bot is NOT logged in')
 
 @bot.command(name='find', help='returns information about a server member')
-async def get_status(context, name=None)
+async def get_status(context, name=None):
     if name:
         log.info(bot.guild.members)
 
