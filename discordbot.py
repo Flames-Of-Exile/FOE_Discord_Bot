@@ -111,7 +111,7 @@ async def get_status(context):
 async def get_status(context, name=None):
     if name:
         member_lst = [member for member in context.guild.members if name == member.name]
-        member = memver_lst[0]
+        member = member_lst[0]
         log.info(member)
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
