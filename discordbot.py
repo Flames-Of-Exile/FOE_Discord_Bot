@@ -87,6 +87,7 @@ async def on_ready():
             channel = chan
         if chan.name == _BROADCAST_CHANNEL:
             broadcast = chan
+    
     login()
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
@@ -112,7 +113,7 @@ async def get_status(context, name=None):
     if name:
         member_lst = [member for member in context.guild.members if name == member.name]
         member = member_lst[0]
-        log.info(member.roles)
+        log.info(context.guild.roles)
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
