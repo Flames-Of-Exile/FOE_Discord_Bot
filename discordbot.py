@@ -130,7 +130,7 @@ async def ban_member(context, name=None, reason=None):
         member = member_lst[0]
         if _ADMIN_ROLE in context.author.roles and member:
             await context.guild.ban(member, reason=None)
-            data = json.dumps('is_active': False)
+            data = json.dumps({'is_active': False})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
             responce = await requests.PATCH(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
             if responce.status_code == 200:
@@ -151,7 +151,7 @@ async def ban_member(context, name=None, reason=None):
         member = member_lst[0]
         if _ADMIN_ROLE in context.author.roles and member:
             await member.remove_roles(_MEMBER_ROLE)
-            data = json.dumps('is_active': False)
+            data = json.dumps({'is_active': False})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
             responce = await requests.PATCH(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
             if responce.status_code == 200:
