@@ -181,7 +181,7 @@ async def get_member_status(context, name=None):
     else:
         await context.send('you must provide a valid member name in order to use a find query.')
 
-@bot.command(name='Grant')
+@bot.command(name='Verify')
 async def grant_user_permisions(context, name=None):
     log.info(f'grant_user_permissions called by {context.author}')
     try:
@@ -307,7 +307,7 @@ async def exile_member(context, name=None, reason=None):
 @bot.command(name='admin', help='lists the admin commands')
 async def admin_commands(context):
     await context.send('`All admin commands should be in the form: !command member_name`\n'+
-                       'Grant: add the member role on discord and verified permissions to the member.\n'+
+                       'Verify: add the member role on discord and verified permissions to the member.\n'+
                        '`Promote: add admin permissions to the member on flamesofexile.com.`\n'+
                        'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
                        '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
