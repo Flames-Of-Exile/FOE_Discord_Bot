@@ -121,6 +121,14 @@ async def on_ready():
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
 
+def find_member(name):
+    '''this method takes a name and returns a member object'''
+        try:
+            member_lst = [member for member in context.guild.members if name == member.name]
+            return member_lst[0]
+        except IndexError:
+            return
+
 
 @bot.command(name='register', help='Website registration instructions.')
 async def register_instructions(context):
@@ -152,14 +160,8 @@ async def get_status(context):
 
 @bot.command(name='find', help='returns information about a server member')
 async def get_member_status(context, name=None):
-    if name:
-        member_lst = [member for member in context.guild.members if name == member.name]
-        try:
-            member = member_lst[0]
-        except IndexError:
-            await context.send('You must provide a valid member')
-            return
-        member = member_lst[0]
+    member = find_member(name)
+    if member is not None:
         log.info(bot.guild.roles)
         responce = f'found member {member.mention} with roles '
         member_roles = [role.name for role in member.roles]
@@ -169,20 +171,14 @@ async def get_member_status(context, name=None):
             responce += f'Admin'
         await context.send(responce)
     else:
-        await context.send('you must provide a member name in order to use a find query.')
+        await context.send('you must provide a valid member name in order to use a find query.')
 
 @bot.command(name='Grant')
 async def grant_user_permisions(context, name=None):
     log.info(f'grant_user_permissions called by {context.author}')
     try:
-        member_lst = [member for member in server.members if name == member.name]
-        try:
-            member = member_lst[0]
-        except IndexError:
-            await context.send('You must provide a valid member')
-            return
-        member = member_lst[0]
-        if (admin_role in context.author.roles) and member:
+        member = find_member(name)
+        if (admin_role in context.author.roles) and member is not None:
             await member.add_roles(member_role)
             data = json.dumps({'is_active': True, 'role': 'verified'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
@@ -193,25 +189,19 @@ async def grant_user_permisions(context, name=None):
             else:
                 log.info('problem with api request when granting member')
                 await context.send(f'{member.mention} has had roles granted on discord but their was a problem granting them permissions on flamesofexile.com')
-        elif member:
+        elif member is not None:
             await context.send('You do not have the authority to invoke this action')
             admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to grant {member.mention} this action is reserved for {admin_role.mention}')
         else:
-            await context.send('You need to include the name of a member in order to invoke this action')
+            await context.send('You need to include the name of a valid member in order to invoke this action')
     except HTTPException:
         await context.send('An error was encountered NO USER Privilages have been modified.')
 
 @bot.command(name='Promote')
 async def promote_user_permisions(context, name=None):
     log.info(f'promote_user {context.author}')
-    member_lst = [member for member in server.members if name == member.name]
-    try:
-        member = member_lst[0]
-    except IndexError:
-        await context.send('You must provide a valid member')
-        return
-    member = member_lst[0]
-    if (admin_role in context.author.roles) and member:
+    member = find_member(name)
+    if (admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'admin'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
         responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
@@ -221,7 +211,7 @@ async def promote_user_permisions(context, name=None):
         else:
             log.info('problem with api request when promoting member')
             await context.send(f'Their was a problem promoting {member.mention} on flamesofexile.com')
-    elif member:
+    elif member is not None:
         await context.send('You do not have the authority to invoke this action')
         admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to promote {member.mention} this action is reserved for {admin_role.mention}')
     else:
@@ -230,13 +220,8 @@ async def promote_user_permisions(context, name=None):
 @bot.command(name='Demote')
 async def demote_user_permisions(context, name=None):
     log.info(f'demote_user {context.author}')
-    member_lst = [member for member in server.members if name == member.name]
-    try:
-        member = member_lst[0]
-    except IndexError:
-        await context.send('You must provide a valid member')
-        return
-    if (admin_role in context.author.roles) and member:
+    member = find_member(name)
+    if (admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'verified'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
         responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
@@ -246,7 +231,7 @@ async def demote_user_permisions(context, name=None):
         else:
             log.info('problem with api request when demoting member')
             await context.send(f'Their was a problem demoting {member.mention} on flamesofexile.com')
-    elif member:
+    elif member is not None:
         await context.send('You do not have the authority to invoke this action')
         admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to demote {member.mention} this action is reserved for {admin_role.mention}')
     else:
@@ -258,17 +243,11 @@ async def demote_user_permisions(context, name=None):
 async def ban_member(context, name=None, reason=None):
     log.info(f'ban_member called by {context.author}')
     try:
-        member_lst = [member for member in server.members if name == member.name]
-        try:
-            member = member_lst[0]
-        except IndexError:
-            await context.send('You must provide a valid member')
-            return
-        member = member_lst[0]
+        member = find_member(name)
         if context.author == member:
             context.send('you cannot ban yourself')
             return
-        if (admin_role in context.author.roles) and member:
+        if (admin_role in context.author.roles) and member is not None:
             await member.remove_roles(member_role, admin_role)
             await context.guild.ban(member, reason=None)
             data = json.dumps({'is_active': False, 'role': 'guest'})
@@ -280,7 +259,7 @@ async def ban_member(context, name=None, reason=None):
             else:
                 log.info('problem with api request when banning member')
                 await context.send(f'{member.mention} has been banned but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
-        elif member:
+        elif member is not None:
             await context.send('You do not have the authority to invoke this action')
             admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to Ban {member.mention} this action is reserved for {admin_role.mention}')
         else:
@@ -293,17 +272,11 @@ async def ban_member(context, name=None, reason=None):
 async def exile_member(context, name=None, reason=None):
     log.info(f'exile_member called by {context.author}')
     try:
-        member_lst = [member for member in server.members if name == member.name]
-        try:
-            member = member_lst[0]
-        except IndexError:
-            await context.send('You must provide a valid member')
-            return
-        member = member_lst[0]
+        member = find_member(name)
         if context.author == member:
             context.send('you cannot exile yourself')
             return
-        if (admin_role in context.author.roles) and member:
+        if (admin_role in context.author.roles) and member is not None:
             await member.remove_roles(member_role, admin_role)
             data = json.dumps({'is_active': False, 'role': 'guest'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
