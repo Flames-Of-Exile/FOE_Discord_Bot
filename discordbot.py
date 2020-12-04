@@ -123,11 +123,11 @@ async def on_ready():
 
 def find_member(name):
     '''this method takes a name and returns a member object'''
-        try:
-            member_lst = [member for member in context.guild.members if name == member.name]
-            return member_lst[0]
-        except IndexError:
-            return
+    try:
+        member_lst = [member for member in server.members if name == member.name]
+        return member_lst[0]
+    except IndexError:
+        return
 
 
 @bot.command(name='register', help='Website registration instructions.')
@@ -137,6 +137,14 @@ async def register_instructions(context):
         'Otherwise, please send me your token and website username with the following command: `!token yourtoken yourusername`'
         )
     await context.send(f'{context.author.mention} Check your DMs for instructions.')
+
+@bot.command(name='login', help='IT only. forces the bot to attempt to log into the backend')
+async def force_login(context):
+    if it_role in context.author.roles:
+        login()
+        await context.send('the login function has run')
+    else:
+        context.send('you do not have permission to invoke this method')
 
 @bot.command(name='status', help='IT only. Returns the loggin status of the bot')
 async def get_status(context):
