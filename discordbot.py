@@ -154,6 +154,11 @@ async def get_status(context):
 async def get_member_status(context, name=None):
     if name:
         member_lst = [member for member in context.guild.members if name == member.name]
+        try:
+            member = member_lst[0]
+        except IndexError:
+            await context.send('You must provide a valid member')
+            return
         member = member_lst[0]
         log.info(bot.guild.roles)
         responce = f'found member {member.mention} with roles '
@@ -171,6 +176,11 @@ async def grant_user_permisions(context, name=None):
     log.info(f'grant_user_permissions called by {context.author}')
     try:
         member_lst = [member for member in server.members if name == member.name]
+        try:
+            member = member_lst[0]
+        except IndexError:
+            await context.send('You must provide a valid member')
+            return
         member = member_lst[0]
         if (admin_role in context.author.roles) and member:
             await member.add_roles(member_role)
@@ -195,6 +205,11 @@ async def grant_user_permisions(context, name=None):
 async def promote_user_permisions(context, name=None):
     log.info(f'promote_user {context.author}')
     member_lst = [member for member in server.members if name == member.name]
+    try:
+        member = member_lst[0]
+    except IndexError:
+        await context.send('You must provide a valid member')
+        return
     member = member_lst[0]
     if (admin_role in context.author.roles) and member:
         data = json.dumps({'is_active': True, 'role': 'admin'})
@@ -216,7 +231,11 @@ async def promote_user_permisions(context, name=None):
 async def demote_user_permisions(context, name=None):
     log.info(f'demote_user {context.author}')
     member_lst = [member for member in server.members if name == member.name]
-    member = member_lst[0]
+    try:
+        member = member_lst[0]
+    except IndexError:
+        await context.send('You must provide a valid member')
+        return
     if (admin_role in context.author.roles) and member:
         data = json.dumps({'is_active': True, 'role': 'verified'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
@@ -240,6 +259,11 @@ async def ban_member(context, name=None, reason=None):
     log.info(f'ban_member called by {context.author}')
     try:
         member_lst = [member for member in server.members if name == member.name]
+        try:
+            member = member_lst[0]
+        except IndexError:
+            await context.send('You must provide a valid member')
+            return
         member = member_lst[0]
         if context.author == member:
             context.send('you cannot ban yourself')
@@ -270,6 +294,11 @@ async def exile_member(context, name=None, reason=None):
     log.info(f'exile_member called by {context.author}')
     try:
         member_lst = [member for member in server.members if name == member.name]
+        try:
+            member = member_lst[0]
+        except IndexError:
+            await context.send('You must provide a valid member')
+            return
         member = member_lst[0]
         if context.author == member:
             context.send('you cannot exile yourself')
