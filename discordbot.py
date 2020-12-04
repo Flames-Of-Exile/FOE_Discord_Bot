@@ -130,7 +130,7 @@ async def register_instructions(context):
         )
     await context.send(f'{context.author.mention} Check your DMs for instructions.')
 
-@bot.command(name='status', help='returns the loggin status of the bot')
+@bot.command(name='status', help='IT only. Returns the loggin status of the bot')
 async def get_status(context):
     if it_role in context.author.roles:
         if refresh_token:
@@ -235,7 +235,7 @@ async def demote_user_permisions(context, name=None):
 
 
 
-@bot.command(name='Ban', help='allows a ChatMod to boot a member from the discord, also removes flamesofexile.com access')
+@bot.command(name='Ban')
 async def ban_member(context, name=None, reason=None):
     log.info(f'ban_member called by {context.author}')
     try:
@@ -293,6 +293,16 @@ async def exile_member(context, name=None, reason=None):
     except HTTPException:
         await context.send('An error was encountered USER Privilages May not have been completely removed.')
         log.info('exile member raised HTTP Exception')
+
+@bot.command(name='admin', help='lists the admin commands')
+async def admin_commands(context):
+    await context.send('`All admin commands should be in the form: !command member_name`\n'+
+                       'Grant: add the member role on discord and verified permissions to the member.\n'+
+                       '`Promote: add admin permissions to the member on flamesofexile.com.`\n'+
+                       'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
+                       '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
+                       'Exile: removes member role from discord and inactivates account on flamesofexile.com.')
+
 
 @bot.command(name='token', help='DM only. Provide token and username to finish website registration.')
 @commands.dm_only()
