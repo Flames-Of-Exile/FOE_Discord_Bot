@@ -20,6 +20,7 @@ _ADMIN_ROLE = int(os.getenv('ADMIN_ROLE'))
 _IT_ROLE = int(os.getenv('IT_ROLE'))
 _MEMBER_ROLE = int(os.getenv('MEMBER_ROLE'))
 _SERVER = int(os.getenv('SERVER_ID'))
+_ANOUNCEMENTS = int(os.getenv('ANOUNCEMENTS'))
 
 
 log = logging.getLogger('discord')
@@ -43,6 +44,7 @@ member_role = None
 admin_role = None
 it_role = None
 server = None
+anouncements = None
 
 nest_asyncio.apply()
 
@@ -103,6 +105,7 @@ async def on_ready():
     global admin_role
     global it_role
     global server
+    global anouncements
 
     server = bot.get_guild(_SERVER)
     log.info(server)
@@ -116,6 +119,8 @@ async def on_ready():
     log.info(it_role)
     admin_role = server.get_role(_ADMIN_ROLE)
     log.info(admin_role)
+    anouncements = server.get_channel(_ANOUNCEMENTS)
+    log.info(anouncements)
 
     login()
     bot.loop.create_task(refresh())
@@ -154,7 +159,7 @@ async def get_status(context):
         else:
             await context.send('The bot is NOT logged in')
         try:
-            await context.send(f'Checking channels and roles\nadmin role: {admin_role.mention}\nmember role: {member_role.mention}\nIT role: {it_role.mention}')
+            await context.send(f'Checking channels and roles\nadmin role: {admin_role.name}\nmember role: {member_role.name}\nIT role: {it_role.name}')
         except Forbidden:
             log.info('Forbidden encountered when sending to context')
         try:
@@ -165,6 +170,12 @@ async def get_status(context):
             await member_channel.send('this is the member channel')
         except Forbidden:
             log.info('Forbidden encountered when sending to member_channel')
+        try:
+            await anouncements.send('this is the anouncements channel')
+        except Forbidden:
+            log.info('Forbidden encountered when sending to anouncements')
+
+
 
 @bot.command(name='find', help='returns information about a server member')
 async def get_member_status(context, name=None):
