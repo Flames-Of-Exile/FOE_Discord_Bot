@@ -1,6 +1,6 @@
 from aiohttp import web
 from eventemitter import EventEmitter
-
+import sys
 
 class WebHookListener(EventEmitter):
 
@@ -17,6 +17,10 @@ listener = WebHookListener()
 
 routes = web.RouteTableDef()
 
+@routes.post('/bot/application')
+async def new_app(req):
+    listener.emit("app", await req.json())
+    return web.Response(text='ok')
 
 # @routes.get('/bot')
 # async def get_root(req):
