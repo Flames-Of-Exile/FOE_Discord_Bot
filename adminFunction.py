@@ -20,7 +20,7 @@ async def get_status(context, roles, refresh_token):
         else:
             await context.send('The bot is NOT logged in')
         try:
-            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}')
+            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}\nrecrute role: {roles.recrute_role.name}')
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to context')
         try:
@@ -35,17 +35,32 @@ async def get_status(context, roles, refresh_token):
             await roles.anouncements.send('this is the anouncements channel')
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to anouncements')
+        try:
+            await roles.recrute_channel.send('this is the recrute channel')
+        except Forbidden:
+            roles.log.info('Forbidden encountered when sending to recrute channel')
 
 async def get_member_status(context, name=None, roles=None):
     member = find_member(name, roles)
     if member is not None:
-        responce = f'found member {member.mention} with roles '
-        member_roles = [role.name for role in member.roles]
+        responce = ''
+        member_roles = [role for role in member.roles]
+        roles.log.info(member_roles)
         if roles.member_role in member_roles:
-            responce += 'Member '
+            responce += 'have a Member tag, '
+        else:
+            responce += 'do not have a Member Tag, '
         if roles.admin_role in member_roles:
-            responce += f'Admin'
-        await context.send(responce)
+            responce += 'they have an Admin Tag'
+        else:
+            responce += 'they do not have Admin Tag'
+        headers = {'Authorization': roles.auth_token}
+        web_response = requests.get(f'{roles.BASE_URL}/api/users/discord/{member.id}', headers=headers, verify=roles.VERIFY_SSL)
+        if web_response.status_code == 200:
+            await context.send(f'User `{web_response.json()["username"]}` found for {member.mention}, they {responce}, and they have web privilages of {web_response.json()["role"]}')
+        else:
+            await context.send(f'No user found for {context.author.mention}')
+            await context.send(responce)
     else:
         await context.send('you must provide a valid member name in order to use a find query.')
 
@@ -55,7 +70,7 @@ async def grant_user_permisions(context, name=None, roles=None, auth_token=None)
         member = find_member(name, roles)
         if (roles.admin_role in context.author.roles) and member is not None:
             await member.add_roles(roles.member_role)
-            await member.remove_roles(roles.recrute_roles)
+            await member.remove_roles(roles.recrute_role)
             data = json.dumps({'is_active': True, 'role': 'verified'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
             responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)

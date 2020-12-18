@@ -91,7 +91,7 @@ async def load_listener():
 #         await channel.send(json['key'])
 
 async def new_application(json):
-    new_app(json, roles)
+    await new_app(json, roles)
 
 @bot.event
 async def on_ready():
@@ -123,7 +123,7 @@ async def on_ready():
 
 @bot.command(name='register', help='Website registration instructions.')
 async def newUser_register_instructions(context):
-    await register_instructions(context)
+    await register_instructions(context, roles)
 
 @bot.command(name='login', help='IT only. forces the bot to attempt to log into the backend')
 async def force_login(context):
