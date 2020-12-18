@@ -15,6 +15,7 @@ from adminFunction import get_status, get_member_status, grant_user_permisions
 from adminFunction import promote_user_permisions, demote_user_permisions
 from adminFunction import ban_member, exile_member, admin_commands
 from userFunctions import get_user, password_reset, password_instructions
+from roleSub import get_roles, add_roles, remove_roles
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
@@ -182,6 +183,18 @@ async def user_password_instructions(context):
 @commands.dm_only()
 async def user_password_resed(context, password=None):
     await password_reset(context, password, roles, auth_token)
+
+@bot.command(name='roles', help='lists subscribable roles')
+async def roleSub_get_roles(context):
+    await get_roles(context, roles)
+
+@bot.command(name='add', help='Provide a subscribable role to add it to your roles')
+async def roleSub_add_roles(context, role=None):
+    await add_roles(context, role, roles)
+
+@bot.command(name='remove', help='Provide a subscribable role to remove it from your roles')
+async def roleSub_remove_roles(context, role=None):
+    await remove_roles(context, role, roles)
 
 if __name__ == "__main__":
     bot.run(TOKEN)
