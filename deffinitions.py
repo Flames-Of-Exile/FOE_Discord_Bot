@@ -50,3 +50,5 @@ class Roles():
         self.VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
         self.auth_token = auth_token
         self.refresh_token = refresh_token
+        self.subscribable = [self.server.get_role(int(role)) for role in os.getenv('SUBSCRIBABLE').split(',')]
+        self.log.info(self.subscribable)
