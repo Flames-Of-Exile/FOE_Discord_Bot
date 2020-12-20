@@ -8,7 +8,6 @@ import nest_asyncio
 import requests
 
 from helperfunctions import find_member
-from deffinitions import Roles
 
 HTTPException = discord.HTTPException
 Forbidden = discord.Forbidden
@@ -20,7 +19,7 @@ async def get_status(context, roles, refresh_token):
         else:
             await context.send('The bot is NOT logged in')
         try:
-            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}\nrecrute role: {roles.recrute_role.name}')
+            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}\nrecruit role: {roles.recruit_role.name}')
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to context')
         try:
@@ -32,35 +31,35 @@ async def get_status(context, roles, refresh_token):
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to member_channel')
         try:
-            await roles.anouncements.send('this is the anouncements channel')
+            await roles.announcements.send('this is the announcements channel')
         except Forbidden:
-            roles.log.info('Forbidden encountered when sending to anouncements')
+            roles.log.info('Forbidden encountered when sending to announcements')
         try:
-            await roles.recrute_channel.send('this is the recrute channel')
+            await roles.recruit_channel.send('this is the recruit channel')
         except Forbidden:
-            roles.log.info('Forbidden encountered when sending to recrute channel')
+            roles.log.info('Forbidden encountered when sending to recruit channel')
 
 async def get_member_status(context, name=None, roles=None):
     member = find_member(name, roles)
     if member is not None:
-        responce = ''
+        response = ''
         member_roles = [role for role in member.roles]
         roles.log.info(member_roles)
         if roles.member_role in member_roles:
-            responce += 'have a Member tag, '
+            response += 'have a Member tag, '
         else:
-            responce += 'do not have a Member Tag, '
+            response += 'do not have a Member Tag, '
         if roles.admin_role in member_roles:
-            responce += 'they have an Admin Tag'
+            response += 'they have an Admin Tag'
         else:
-            responce += 'they do not have Admin Tag'
+            response += 'they do not have Admin Tag'
         headers = {'Authorization': roles.auth_token}
         web_response = requests.get(f'{roles.BASE_URL}/api/users/discord/{member.id}', headers=headers, verify=roles.VERIFY_SSL)
         if web_response.status_code == 200:
-            await context.send(f'User `{web_response.json()["username"]}` found for {member.mention}, they {responce}, and they have web privilages of {web_response.json()["role"]}')
+            await context.send(f'User `{web_response.json()["username"]}` found for {member.mention}, they {response}, and they have web privilages of {web_response.json()["role"]}')
         else:
             await context.send(f'No user found for {context.author.mention}')
-            await context.send(responce)
+            await context.send(response)
     else:
         await context.send('you must provide a valid member name in order to use a find query.')
 
@@ -70,11 +69,11 @@ async def grant_user_permisions(context, name=None, roles=None, auth_token=None)
         member = find_member(name, roles)
         if (roles.admin_role in context.author.roles) and member is not None:
             await member.add_roles(roles.member_role)
-            await member.remove_roles(roles.recrute_role)
+            await member.remove_roles(roles.recruit_role)
             data = json.dumps({'is_active': True, 'role': 'verified'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
-            if responce.status_code == 200:
+            response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
+            if response.status_code == 200:
                 await context.send(f'{member.mention} has been granted and their roles have been verified on flamesofexile.com')
                 roles.log.info('grant member completed')
             else:
@@ -94,8 +93,8 @@ async def promote_user_permisions(context, name=None, roles=None, auth_token=Non
     if (roles.admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'admin'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-        responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
-        if responce.status_code == 200:
+        response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
+        if response.status_code == 200:
             await context.send(f'{member.mention} has been Promoted on flamesofexile.com')
             roles.log.info('promote member completed')
         else:
@@ -113,8 +112,8 @@ async def demote_user_permisions(context, name=None, roles=None, auth_token=None
     if (roles.admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'verified'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-        responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
-        if responce.status_code == 200:
+        response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
+        if response.status_code == 200:
             await context.send(f'{member.mention} has been demoted on flamesofexile.com')
             roles.log.info('demote member completed')
         else:
@@ -134,12 +133,12 @@ async def ban_member(context, name=None, reason=None, roles=None, auth_token=Non
             context.send('you cannot ban yourself')
             return
         if (roles.admin_role in context.author.roles) and member is not None:
-            await member.remove_roles(roles.member_role, roles.admin_role, roles.recrute_role)
+            await member.remove_roles(roles.member_role, roles.admin_role, roles.recruit_role)
             await context.guild.ban(member, reason=None)
             data = json.dumps({'is_active': False, 'role': 'guest'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
-            if responce.status_code == 200:
+            response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
+            if response.status_code == 200:
                 await context.send(f'{member.mention} has been banned and their roles have been revoked from flamesofexile.com')
                 roles.log.info('ban member completed')
             else:
@@ -161,11 +160,11 @@ async def exile_member(context, name=None, reason=None, roles=None, auth_token=N
             context.send('you cannot exile yourself')
             return
         if (roles.admin_role in context.author.roles) and member is not None:
-            await member.remove_roles(roles.member_role, roles.admin_role, roles.recrute_role)
+            await member.remove_roles(roles.member_role, roles.admin_role, roles.recruit_role)
             data = json.dumps({'is_active': False, 'role': 'guest'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
-            if responce.status_code == 200:
+            response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)
+            if response.status_code == 200:
                 await context.send(f'{member.mention} has been exiled and their roles have been revoked from flamesofexile.com')
                 roles.log.info('exile member completed')
             else:
