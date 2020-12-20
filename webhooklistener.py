@@ -1,6 +1,5 @@
 from aiohttp import web
 from eventemitter import EventEmitter
-import sys
 
 class WebHookListener(EventEmitter):
 

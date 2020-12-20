@@ -56,7 +56,7 @@ async def new_app(json, roles):
         if json['SITE_TOKEN'] == roles.SITE_TOKEN:
             roles.log.info("Site Token Matched")
             anouncement = f"""{roles.member_role.mention} a new application has been receved please take a moment to review it\n
-Applicaint: {json['ingameName']}\n\n
+Applicant: {json['inGameName']}\n\n
 What game or games are you interested in playing with us? \n{json['interestedGames']}\n\n
 Were you referred by an existing guild member? if so please tell us who: \n{referal}\n\n
 How many hours a week do you usually play MMOs? \n{json['hours']}\n\n
@@ -70,10 +70,12 @@ What made you want to apply to Flames of Exile, and why do you think you'd be a 
 Finally, is there anything else you would like to tell us about yourself?\n
 {json['other']}"""
 
-            await roles.anouncements.send(anouncement)
-            await roles.recrute_channel.send(anouncement)
-    except:
-        roles.log.info('error when formatting application')
+            await roles.announcements.send(anouncement)
+            await roles.recruit_channel.send(anouncement)
+    except NameError as error:
+        roles.log.info(f'error when formatting application: {error}')
+    except KeyError as error:
+        roles.log.info(f'error when formatting application: {error}')
 
 async def token_registration(context, token=None, username=None, roles=None, auth_token=None):
     roles.log.info('token_registration called')
@@ -86,7 +88,7 @@ async def token_registration(context, token=None, username=None, roles=None, aut
     member = False
     target_user = roles.server.get_member(context.author.id)
     roles.log.info(target_user)
-    if roles.recrute_role in target_user.roles:
+    if roles.recruit_role in target_user.roles:
         member = True
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
@@ -96,11 +98,11 @@ async def token_registration(context, token=None, username=None, roles=None, aut
         roles.log.info('request sent to api/confirm')
         if response.status_code == 200:
             if member == False:
-                await target_user.add_roles(roles.recrute_role)
-                await roles.recrute_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
-                await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recrute_role.mention}
+                await target_user.add_roles(roles.recruit_role)
+                await roles.recruit_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
+                await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recruit_role.mention}
 your application has been submitted to the guild for review please join in the conversation
-in the {roles.recrute_channel.mention}''')
+in the {roles.recruit_channel.mention}''')
                 await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
                                    f'for account {username} but does not has not yet been assigned member roles yet')
             else:

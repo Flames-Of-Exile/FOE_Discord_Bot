@@ -9,7 +9,7 @@ import nest_asyncio
 import requests
 
 from logging import log
-from deffinitions import Roles
+from definitions import Roles
 from newUser import new_app, token_registration, register_instructions
 from adminFunction import get_status, get_member_status, grant_user_permisions
 from adminFunction import promote_user_permisions, demote_user_permisions
@@ -40,9 +40,9 @@ member_role = None
 admin_role = None
 it_role = None
 server = None
-anouncements = None
-recrute_role = None
-recrute_channel = None
+announcements = None
+recruit_role = None
+recruit_channel = None
 roles = None
 
 nest_asyncio.apply()
@@ -103,9 +103,9 @@ async def on_ready():
     global admin_role
     global it_role
     global server
-    global anouncements
-    global recrute_role
-    global recrute_channel
+    global announcements
+    global recruit_role
+    global recruit_channel
     roles = Roles(bot)
     admin_channel = roles.admin_channel
     member_channel = roles.member_channel
@@ -113,9 +113,9 @@ async def on_ready():
     admin_role = roles.admin_role
     it_role = roles.it_role
     server = roles.server
-    anouncements = roles.anouncements
-    recrute_role = roles.recrute_role
-    recrute_channel = roles.recrute_channel
+    announcements = roles.announcements
+    recruit_role = roles.recruit_role
+    recruit_channel = roles.recruit_channel
 
     login()
     bot.loop.create_task(refresh())
