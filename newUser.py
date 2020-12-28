@@ -88,7 +88,7 @@ async def token_registration(context, token=None, username=None, roles=None, aut
     member = False
     target_user = roles.server.get_member(context.author.id)
     roles.log.info(target_user)
-    if roles.recruit_role in target_user.roles:
+    if roles.member_role in target_user.roles:
         member = True
     data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
