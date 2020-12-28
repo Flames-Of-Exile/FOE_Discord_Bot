@@ -179,10 +179,25 @@ async def exile_member(context, name=None, reason=None, roles=None, auth_token=N
         await context.send('An error was encountered USER Privilages May not have been completely removed.')
         roles.log.info('exile member raised HTTP Exception')
 
+async def burn_guild(context, roles, auth_token, name=None):
+    if roles.admin_role not in context.author.roles:
+        roles.admin_channel.send(f'{context.author.mention} attempted to invoke Burn on {name}')
+        return
+    data = json.dumps({'guild': name})
+    headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+    response = requests.patch(f'{roles.BASE_URL}/api/guilds/burn', data=data, headers=headers)
+    for member in response.json()['members']:
+        target = await roles.server.get_member(member)
+        target.remove_roles(roles.diplo_role, roles.alliance_role)
+        await roles.admin_channel.send(f'{target.mention} burned')
+    await roles.announcement_channel.send(f'{name} has been Burned and Exiled from Flames of Exile!\n'+
+                                           'If you see any of their members sitll in privlaged channels please report it')
+
 async def admin_commands(context):
         await context.send('`All admin commands should be in the form: !command member_name`\n'+
                     'Verify: add the member role on discord and verified permissions to the member.\n'+
                     '`Promote: add admin permissions to the member on flamesofexile.com.`\n'+
                     'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
                     '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
-                    'Exile: removes member role from discord and inactivates account on flamesofexile.com.')
+                    'Exile: removes member role from discord and inactivates account on flamesofexile.com.\n'+
+                    '`Burn: removes all permissions from target Guild`')

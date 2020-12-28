@@ -13,9 +13,10 @@ from definitions import Roles
 from newUser import new_app, token_registration, register_instructions
 from adminFunction import get_status, get_member_status, grant_user_permisions
 from adminFunction import promote_user_permisions, demote_user_permisions
-from adminFunction import ban_member, exile_member, admin_commands
+from adminFunction import ban_member, exile_member, admin_commands, burn_guild
 from userFunctions import get_user, password_reset, password_instructions
 from roleSub import get_roles, add_roles, remove_roles
+from diplomat import vouch, endvouch
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 BOT_PASSWORD = os.getenv('BOT_PASSWORD')
@@ -142,25 +143,33 @@ async def admin_get_status(context):
 async def admin_get_member_status(context, name=None):
     await get_member_status(context, name, roles)
 
-@bot.command(name='Verify')
+@bot.command(name='Verify', help='Admin only, add the member role on discord and verified permissions to the member.')
 async def admin_grant_user_permissions(context, name=None):
     await grant_user_permisions(context, name, roles, auth_token)
 
-@bot.command(name='Promote')
+@bot.command(name='Promote', help='Admin only, add admin permissions to the member on flamesofexile.com.')
 async def admin_promote_user_permisions(context, name=None):
     await promote_user_permisions(context, name, roles, auth_token)
 
-@bot.command(name='Demote')
+@bot.command(name='Demote', help='Admin only, replace the flamesofexile.com admin permissions with verified.')
 async def admin_demote_user_permisions(context, name=None):
     await demote_user_permisions(context, name, roles, auth_token)
 
-@bot.command(name='Ban')
+@bot.command(name='Ban', help='Admin only, bans member from discord and inactivates their account on flamesofexile.com.')
 async def admin_ban_member(context, name=None, reason=None):
     await ban_member(context, name, reason, roles, auth_token)
 
-@bot.command(name='Exile')
+@bot.command(name='Exile', help='Admin only, removes member role from discord and inactivates account on flamesofexile.com.')
 async def admin_exile_member(context, name=None, reason=None):
     await exile_member(context, name, reason, roles, auth_token)
+
+@bot.command(name='Burn', help='Admin only, removes all permissions from target Guild')
+async def admin_burn_guild(context, name=None, *args):
+    guild = name
+    if args is not None:
+        for arg in args:
+            guild = f'{guild} {arg}'
+    await burn_guild(context, roles, auth_token, guild)
 
 @bot.command(name='admin', help='lists the admin commands')
 async def admin_admin_commands(context):
@@ -195,6 +204,14 @@ async def roleSub_add_roles(context, role=None):
 @bot.command(name='remove', help='Provide a subscribable role to remove it from your roles')
 async def roleSub_remove_roles(context, role=None):
     await remove_roles(context, role, roles)
+
+@bot.command(name='vouch', help='Diplomat only, gives member of the guild leader\' alliance the ability to use flamesofexile.com')
+async def diplo_vouch(context, user=None):
+    await vouch(context, roles, auth_token, user)
+
+@bot.command(name='endvouch', help='Diplomat only, removes permissions from member of diplomat\'s guild')
+async def diplo_endvouch(context, user=None):
+    await endvouch(context, roles, auth_token, user)
 
 if __name__ == "__main__":
     bot.run(TOKEN)
