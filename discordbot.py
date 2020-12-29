@@ -13,7 +13,7 @@ from definitions import Roles
 from newUser import new_app, token_registration, register_instructions
 from adminFunction import get_status, get_member_status, grant_user_permisions
 from adminFunction import promote_user_permisions, demote_user_permisions
-from adminFunction import ban_member, exile_member, admin_commands, burn_guild
+from adminFunction import ban_member, exile_member, admin_commands, burn_guild, unburn_guild
 from userFunctions import get_user, password_reset, password_instructions
 from roleSub import get_roles, add_roles, remove_roles
 from diplomat import vouch, endvouch
@@ -171,6 +171,14 @@ async def admin_burn_guild(context, name=None, *args):
             guild = f'{guild} {arg}'
     await burn_guild(context, roles, auth_token, guild)
 
+@bot.command(name='unBurn', help='Admin only, removes all permissions from target Guild')
+async def admin_unburn_guild(context, name=None, *args):
+    guild = name
+    if args is not None:
+        for arg in args:
+            guild = f'{guild} {arg}'
+    await unburn_guild(context, roles, auth_token, guild)
+
 @bot.command(name='admin', help='lists the admin commands')
 async def admin_admin_commands(context):
     await admin_commands(context)
@@ -209,7 +217,7 @@ async def roleSub_remove_roles(context, role=None):
 async def diplo_vouch(context, user=None):
     await vouch(context, roles, auth_token, user)
 
-@bot.command(name='endvouch', help='Diplomat only, removes permissions from member of diplomat\'s guild')
+@bot.command(name='unvouch', help='Diplomat only, removes permissions from member of diplomat\'s guild')
 async def diplo_endvouch(context, user=None):
     await endvouch(context, roles, auth_token, user)
 

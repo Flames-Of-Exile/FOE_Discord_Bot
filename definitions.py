@@ -8,15 +8,19 @@ from discord.ext import commands
 import discord
 import nest_asyncio
 
-ADMIN_CHANNEL = int(os.getenv('ADMIN_CHANNEL'))
-MEMBER_CHANNEL = int(os.getenv('MEMBER_CHANNEL'))
-ADMIN_ROLE = int(os.getenv('ADMIN_ROLE'))
-IT_ROLE = int(os.getenv('IT_ROLE'))
-MEMBER_ROLE = int(os.getenv('MEMBER_ROLE'))
 SERVER = int(os.getenv('SERVER_ID'))
 ANNOUNCEMENTS = int(os.getenv('ANNOUNCEMENTS'))
+ADMIN_ROLE = int(os.getenv('ADMIN_ROLE'))
+ADMIN_CHANNEL = int(os.getenv('ADMIN_CHANNEL'))
+IT_ROLE = int(os.getenv('IT_ROLE'))
+IT_CHANNEL = int(os.getenv('IT_CHANNEL'))
+MEMBER_ROLE = int(os.getenv('MEMBER_ROLE'))
+MEMBER_CHANNEL = int(os.getenv('MEMBER_CHANNEL'))
 RECRUIT_ROLE = int(os.getenv('RECRUIT_ROLE'))
 RECRUIT_CHANNEL = int(os.getenv("RECRUIT_CHANNEL"))
+DIPLO_ROLE = int(os.getenv("DIPLO_ROLE"))
+DIPLO_CHANNEL = int(os.getenv("DIPLO_CHANNEL"))
+ALLIANCE_ROLE = int(os.getenv("ALLIANCE_ROLE"))
 
 
 class Roles():
@@ -35,6 +39,8 @@ class Roles():
         self.log.info(self.member_role)
         self.it_role = self.server.get_role(IT_ROLE)
         self.log.info(self.it_role)
+        self.it_channel = self.server.get_channel(IT_CHANNEL)
+        self.log.info(self.it_channel)
         self.admin_role = self.server.get_role(ADMIN_ROLE)
         self.log.info(self.admin_role)
         self.recruit_role = self.server.get_role(RECRUIT_ROLE)
@@ -52,3 +58,9 @@ class Roles():
         self.refresh_token = refresh_token
         self.subscribable = [self.server.get_role(int(role)) for role in os.getenv('SUBSCRIBABLE').split(',')]
         self.log.info(self.subscribable)
+        self.diplo_role = self.server.get_role(DIPLO_ROLE)
+        self.log.info(self.diplo_role)
+        self.diplo_channel = self.server.get_channel(DIPLO_CHANNEL)
+        self.log.info(self.diplo_channel)
+        self.alliance_role = self.server.get_role(ALLIANCE_ROLE)
+        self.log.info(self.alliance_role)
