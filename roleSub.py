@@ -11,7 +11,7 @@ async def get_roles(context, roles):
     response += '.\n Of those you have subscribed to: '
     my_subs = [sub.name for sub in context.author.roles if sub in possible_subs]
     for sub in my_subs:
-        response += f'{sub.name}, '
+        response += f'{sub}, '
     response = response[:-1]
     response += '.\n If you would like to add a role say !add <role name>\n'
     response += 'If you would like to remove a role say !remove <role name>'
