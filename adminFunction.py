@@ -186,6 +186,9 @@ async def burn_guild(context, roles, auth_token, name=None):
     if roles.admin_role not in context.author.roles:
         roles.admin_channel.send(f'{context.author.mention} attempted to invoke Burn on {name}')
         return
+    if name == 'Flames of Exile':
+        context.send(f'Shame to {context.author.mention} they have tried to overthrow the guild!')
+        return
     data = json.dumps({'guild': name})
     headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
     response = requests.patch(f'{roles.BASE_URL}/api/guilds/burn', data=data, headers=headers, verify=roles.VERIFY_SSL)
@@ -219,4 +222,5 @@ async def admin_commands(context):
                     'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
                     '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
                     'Exile: removes member role from discord and inactivates account on flamesofexile.com.\n'+
-                    '`Burn: removes all permissions from target Guild`')
+                    '`Burn: removes all permissions from target Guild`\n'+
+                    'unBurn: gives alliance member on flamesofexile.com and aliance role to discord for all members of guild')
