@@ -19,7 +19,8 @@ async def get_status(context, roles, refresh_token):
         else:
             await context.send('The bot is NOT logged in')
         try:
-            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}\nrecruit role: {roles.recruit_role.name}')
+            await context.send(f'Checking channels and roles\nadmin role: {roles.admin_role.name}\nmember role: {roles.member_role.name}\nIT role: {roles.it_role.name}\nrecruit role: {roles.recruit_role.name}\n'+
+                                f'Diplomat role: {roles.diplo_role.name}\nAlliance Member: {roles.alliance_role.name}')
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to context')
         try:
@@ -38,25 +39,26 @@ async def get_status(context, roles, refresh_token):
             await roles.recruit_channel.send('this is the recruit channel')
         except Forbidden:
             roles.log.info('Forbidden encountered when sending to recruit channel')
+        try:
+            await roles.diplo_channel.send('this is the diplo channel')
+        except Forbidden:
+            roles.log.info('Forbidden encountered when sending to diplo channel')
 
 async def get_member_status(context, name=None, roles=None):
     member = find_member(name, roles)
     if member is not None:
         response = ''
-        member_roles = [role for role in member.roles]
-        roles.log.info(member_roles)
-        if roles.member_role in member_roles:
-            response += 'have a Member tag, '
-        else:
-            response += 'do not have a Member Tag, '
-        if roles.admin_role in member_roles:
-            response += 'they have an Admin Tag'
-        else:
-            response += 'they do not have Admin Tag'
+        for role in member.roles:
+            if role.name != '@everyone':
+                response += f'{role.name} ,'
+        response = response[:-1]
         headers = {'Authorization': roles.auth_token}
         web_response = requests.get(f'{roles.BASE_URL}/api/users/discord/{member.id}', headers=headers, verify=roles.VERIFY_SSL)
         if web_response.status_code == 200:
-            await context.send(f'User `{web_response.json()["username"]}` found for {member.mention}, they {response}, and they have web privilages of {web_response.json()["role"]}')
+            web_privs = web_response.json()['role']
+            if web_response.json()['is_active'] == False or web_response.json()['guild']['is_active'] == False:
+                web_privs = 'none'
+            await context.send(f'User `{web_response.json()["username"]}` found for {member.mention}, they have the roles: {response}. They have web privilage level of: {web_privs}')
         else:
             await context.send(f'No user found for {context.author.mention}')
             await context.send(response)
@@ -90,6 +92,7 @@ async def grant_user_permisions(context, name=None, roles=None, auth_token=None)
 async def promote_user_permisions(context, name=None, roles=None, auth_token=None):
     roles.log.info(f'promote_user {context.author}')
     member = find_member(name, roles)
+    roles.log.info(context.author)
     if (roles.admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'admin'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
@@ -179,10 +182,41 @@ async def exile_member(context, name=None, reason=None, roles=None, auth_token=N
         await context.send('An error was encountered USER Privilages May not have been completely removed.')
         roles.log.info('exile member raised HTTP Exception')
 
+async def burn_guild(context, roles, auth_token, name=None):
+    if roles.admin_role not in context.author.roles:
+        roles.admin_channel.send(f'{context.author.mention} attempted to invoke Burn on {name}')
+        return
+    data = json.dumps({'guild': name})
+    headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+    response = requests.patch(f'{roles.BASE_URL}/api/guilds/burn', data=data, headers=headers, verify=roles.VERIFY_SSL)
+    roles.log.info(response.json())
+    for member in response.json():
+        target = roles.server.get_member(member)
+        await target.remove_roles(roles.diplo_role, roles.alliance_role)
+        await roles.admin_channel.send(f'{target.mention} burned')
+    await roles.announcements.send(f'{name} has been Burned and Exiled from Flames of Exile!\n'+
+                                           'If you see any of their members sitll in privlaged channels please report it')
+
+async def unburn_guild(context, roles, auth_token, name=None):
+    if roles.admin_role not in context.author.roles:
+        roles.admin_channel.send(f'{context.author.mention} attempted to invoke Burn on {name}')
+        return
+    data = json.dumps({'guild': name})
+    headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
+    response = requests.patch(f'{roles.BASE_URL}/api/guilds/unburn', data=data, headers=headers, verify=roles.VERIFY_SSL)
+    roles.log.info(response.json())
+    for member in response.json():
+        target = roles.server.get_member(member)
+        await target.add_roles(roles.alliance_role)
+        await roles.admin_channel.send(f'{target.mention} unburned')
+    await roles.announcements.send(f'{name} has been Reinstated to the Flames of Exile alliance!')
+
+
 async def admin_commands(context):
         await context.send('`All admin commands should be in the form: !command member_name`\n'+
                     'Verify: add the member role on discord and verified permissions to the member.\n'+
                     '`Promote: add admin permissions to the member on flamesofexile.com.`\n'+
                     'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
                     '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
-                    'Exile: removes member role from discord and inactivates account on flamesofexile.com.')
+                    'Exile: removes member role from discord and inactivates account on flamesofexile.com.\n'+
+                    '`Burn: removes all permissions from target Guild`')

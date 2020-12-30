@@ -96,15 +96,20 @@ async def token_registration(context, token=None, username=None, roles=None, aut
     try:
         response = requests.put(f'{roles.BASE_URL}/api/users/confirm', data=data, headers=headers, verify=roles.VERIFY_SSL)
         roles.log.info('request sent to api/confirm')
+        user_guild = response.json()['guild']['name']
         if response.status_code == 200:
             if member == False:
-                await target_user.add_roles(roles.recruit_role)
-                await roles.recruit_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
-                await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recruit_role.mention}
+                if user_guild == 'Flames of Exile':
+                    await target_user.add_roles(roles.recruit_role)
+                    await roles.recruit_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
+                    await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recruit_role.mention}
 your application has been submitted to the guild for review please join in the conversation
 in the {roles.recruit_channel.mention}''')
-                await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
-                                   f'for account {username} but does not has not yet been assigned member roles yet')
+                    await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
+                                    f'for account {username} but does not has not yet been assigned member roles yet')
+                else:
+                    await roles.diplo_channel.send(f'Guild leaders {context.author.mention} has registered and said {user_guild} would vouch')
+                    await roles.it_channel.send(f'{roles.it_role.mention} has verified their registration with a guild membership of {user_guild}')
             else:
                 await context.send('Registration successful.')
                 await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +

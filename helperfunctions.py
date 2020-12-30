@@ -4,4 +4,4 @@ def find_member(name, roles):
         member_lst = [member for member in roles.server.members if name == member.name]
         return member_lst[0]
     except IndexError:
-        return
+        return None
