@@ -58,6 +58,7 @@ def login():
     except requests.exceptions.RequestException:
         pass
 
+
 async def refresh():
     while True:
         await asyncio.sleep(270)
@@ -121,6 +122,7 @@ async def on_ready():
     bot.loop.create_task(refresh())
     bot.loop.create_task(load_listener())
 
+
 def find_member(name):
     '''this method takes a name and returns a member object'''
     try:
@@ -135,8 +137,9 @@ async def register_instructions(context):
     await context.author.send(
         f'Hello. If you have not already done so, first start your registration on our site at {BASE_URL}\n'
         'Otherwise, please send me your token and website username with the following command: `!token yourtoken yourusername`'
-        )
+    )
     await context.send(f'{context.author.mention} Check your DMs for instructions.')
+
 
 @bot.command(name='login', help='IT only. forces the bot to attempt to log into the backend')
 async def force_login(context):
@@ -146,6 +149,7 @@ async def force_login(context):
     else:
         context.send('you do not have permission to invoke this method')
 
+
 @bot.command(name='status', help='IT only. Returns the loggin status of the bot')
 async def get_status(context):
     if it_role in context.author.roles:
@@ -154,7 +158,8 @@ async def get_status(context):
         else:
             await context.send('The bot is NOT logged in')
         try:
-            await context.send(f'Checking channels and roles\nadmin role: {admin_role.mention}\nmember role: {member_role.mention}\nIT role: {it_role.mention}')
+            await context.send(f'Checking channels and roles\nadmin role: {admin_role.mention}\n' +
+                               f'member role: {member_role.mention}\nIT role: {it_role.mention}')
         except Forbidden:
             log.info('Forbidden encountered when sending to context')
         try:
@@ -166,6 +171,7 @@ async def get_status(context):
         except Forbidden:
             log.info('Forbidden encountered when sending to member_channel')
 
+
 @bot.command(name='find', help='returns information about a server member')
 async def get_member_status(context, name=None):
     member = find_member(name)
@@ -176,10 +182,11 @@ async def get_member_status(context, name=None):
         if _MEMBER_ROLE in member_roles:
             responce += 'Member '
         if _ADMIN_ROLE in member_roles:
-            responce += f'Admin'
+            responce += 'Admin'
         await context.send(responce)
     else:
         await context.send('you must provide a valid member name in order to use a find query.')
+
 
 @bot.command(name='Verify')
 async def grant_user_permisions(context, name=None):
@@ -190,20 +197,26 @@ async def grant_user_permisions(context, name=None):
             await member.add_roles(member_role)
             data = json.dumps({'is_active': True, 'role': 'verified'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}',
+                                      data=data, headers=headers, verify=VERIFY_SSL)
             if responce.status_code == 200:
-                await context.send(f'{member.mention} has been granted and their roles have been verified on flamesofexile.com')
+                await context.send(f'{member.mention} has been granted and ' +
+                                   'their roles have been verified on flamesofexile.com')
                 log.info('grant member completed')
             else:
                 log.info('problem with api request when granting member')
-                await context.send(f'{member.mention} has had roles granted on discord but their was a problem granting them permissions on flamesofexile.com')
+                await context.send(f'{member.mention} has had roles granted on discord but ' +
+                                   'their was a problem granting them permissions on flamesofexile.com')
         elif member is not None:
             await context.send('You do not have the authority to invoke this action')
-            admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to grant {member.mention} this action is reserved for {admin_role.mention}')
+            admin_channel.send(
+                f'{it_role.mention}{context.author.mention} attempted to grant {member.mention} ' +
+                f'this action is reserved for {admin_role.mention}')
         else:
             await context.send('You need to include the name of a valid member in order to invoke this action')
     except HTTPException:
         await context.send('An error was encountered NO USER Privilages have been modified.')
+
 
 @bot.command(name='Promote')
 async def promote_user_permisions(context, name=None):
@@ -212,7 +225,8 @@ async def promote_user_permisions(context, name=None):
     if (admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'admin'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-        responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+        responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}',
+                                  data=data, headers=headers, verify=VERIFY_SSL)
         if responce.status_code == 200:
             await context.send(f'{member.mention} has been Promoted on flamesofexile.com')
             log.info('promote member completed')
@@ -221,9 +235,12 @@ async def promote_user_permisions(context, name=None):
             await context.send(f'Their was a problem promoting {member.mention} on flamesofexile.com')
     elif member is not None:
         await context.send('You do not have the authority to invoke this action')
-        admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to promote {member.mention} this action is reserved for {admin_role.mention}')
+        admin_channel.send(
+            f'{it_role.mention}{context.author.mention} attempted to promote {member.mention} ' +
+            f'this action is reserved for {admin_role.mention}')
     else:
         await context.send('You need to include the name of a member in order to invoke this action')
+
 
 @bot.command(name='Demote')
 async def demote_user_permisions(context, name=None):
@@ -232,7 +249,8 @@ async def demote_user_permisions(context, name=None):
     if (admin_role in context.author.roles) and member is not None:
         data = json.dumps({'is_active': True, 'role': 'verified'})
         headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-        responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+        responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}',
+                                  data=data, headers=headers, verify=VERIFY_SSL)
         if responce.status_code == 200:
             await context.send(f'{member.mention} has been demoted on flamesofexile.com')
             log.info('demote member completed')
@@ -241,10 +259,11 @@ async def demote_user_permisions(context, name=None):
             await context.send(f'Their was a problem demoting {member.mention} on flamesofexile.com')
     elif member is not None:
         await context.send('You do not have the authority to invoke this action')
-        admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to demote {member.mention} this action is reserved for {admin_role.mention}')
+        admin_channel.send(
+            f'{it_role.mention}{context.author.mention} attempted to demote {member.mention} ' +
+            f'this action is reserved for {admin_role.mention}')
     else:
         await context.send('You need to include the name of a member in order to invoke this action')
-
 
 
 @bot.command(name='Ban')
@@ -260,21 +279,26 @@ async def ban_member(context, name=None, reason=None):
             await context.guild.ban(member, reason=None)
             data = json.dumps({'is_active': False, 'role': 'guest'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}',
+                                      data=data, headers=headers, verify=VERIFY_SSL)
             if responce.status_code == 200:
-                await context.send(f'{member.mention} has been banned and their roles have been revoked from flamesofexile.com')
+                await context.send(f'{member.mention} has been banned and their roles ' +
+                                   'have been revoked from flamesofexile.com')
                 log.info('ban member completed')
             else:
                 log.info('problem with api request when banning member')
-                await context.send(f'{member.mention} has been banned but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
+                await context.send(f'{member.mention} has been banned but an error was encountered ' +
+                                   'removing roles from flamesofexile.com manual removal will be needed')
         elif member is not None:
             await context.send('You do not have the authority to invoke this action')
-            admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to Ban {member.mention} this action is reserved for {admin_role.mention}')
+            admin_channel.send(
+                f'{it_role.mention}{context.author.mention} attempted to Ban {member.mention} ' +
+                f'this action is reserved for {admin_role.mention}')
         else:
             await context.send('You need to include the name of a member in order to invoke this action')
     except HTTPException:
         await context.send('An error was encountered NO USER Privilages have been modified.')
-        
+
 
 @bot.command(name='Exile')
 async def exile_member(context, name=None, reason=None):
@@ -288,29 +312,35 @@ async def exile_member(context, name=None, reason=None):
             await member.remove_roles(member_role, admin_role)
             data = json.dumps({'is_active': False, 'role': 'guest'})
             headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=VERIFY_SSL)
+            responce = requests.patch(f'{BASE_URL}/api/users/discordRoles/{member.id}',
+                                      data=data, headers=headers, verify=VERIFY_SSL)
             if responce.status_code == 200:
-                await context.send(f'{member.mention} has been exiled and their roles have been revoked from flamesofexile.com')
+                await context.send(f'{member.mention} has been exiled and their roles ' +
+                                   'have been revoked from flamesofexile.com')
                 log.info('exile member completed')
             else:
                 log.info('problem with api request when exileing member')
-                await context.send(f'{member.mention} has been exiled but an error was encountered removing roles from flamesofexile.com manual removal will be needed')
+                await context.send(f'{member.mention} has been exiled but an error was encountered ' +
+                                   'removing roles from flamesofexile.com manual removal will be needed')
         elif member:
             await context.send('You do not have the authority to invoke this acction')
-            admin_channel.send(f'{it_role.mention}{context.author.mention} attempted to exile {member.mention} this action is reserved for {admin_role.mention}')
+            admin_channel.send(
+                f'{it_role.mention}{context.author.mention} attempted to exile {member.mention} ' +
+                f'this action is reserved for {admin_role.mention}')
         else:
             await context.send('You need to include the name of a member in order to invoke this action')
     except HTTPException:
         await context.send('An error was encountered USER Privilages May not have been completely removed.')
         log.info('exile member raised HTTP Exception')
 
+
 @bot.command(name='admin', help='lists the admin commands')
 async def admin_commands(context):
-    await context.send('`All admin commands should be in the form: !command member_name`\n'+
-                       'Verify: add the member role on discord and verified permissions to the member.\n'+
-                       '`Promote: add admin permissions to the member on flamesofexile.com.`\n'+
-                       'Demote: replace the flamesofexile.com admin permissions with verified.\n'+
-                       '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n'+
+    await context.send('`All admin commands should be in the form: !command member_name`\n' +
+                       'Verify: add the member role on discord and verified permissions to the member.\n' +
+                       '`Promote: add admin permissions to the member on flamesofexile.com.`\n' +
+                       'Demote: replace the flamesofexile.com admin permissions with verified.\n' +
+                       '`Ban: bans member from discord and inactivates their account on flamesofexile.com.`\n' +
                        'Exile: removes member role from discord and inactivates account on flamesofexile.com.')
 
 
@@ -321,7 +351,7 @@ async def token_registration(context, token=None, username=None):
     if token is None or username is None:
         await context.send(
             'Token and username are required. Please send them with the following command: `!token yourtoken yourusername`'
-            )
+        )
         return
     await context.send(f'Processing token: `{token}` with username: `{username}`')
     member = False
@@ -341,10 +371,10 @@ async def token_registration(context, token=None, username=None):
                 await context.send('You do not yet have a Member tag if you are not yet a member ' +
                                    'of Flames of Exile Please visit https://foeguild.enjin.com/ to apply')
                 await admin_channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration ' +
-                                   f'for account {username} but does not has not yet been assigned member roles yet')
+                                         f'for account {username} but does not has not yet been assigned member roles yet')
             else:
                 await admin_channel.send(f'<@&758647680800260116> {context.author.mention} has verified their registration ' +
-                                   f'for account {username} and has been assigned roles on flamesofexile.com')
+                                         f'for account {username} and has been assigned roles on flamesofexile.com')
         elif response.status_code == 504:
             await context.send('You have successfully confirmed your registration please ping "@sysOpp"' +
                                'in the flames of Exile server to let them know you need privilages')
@@ -354,7 +384,7 @@ async def token_registration(context, token=None, username=None):
             await context.send(
                 'There was an issue with your registration. Please doublecheck the information you provided'
                 'and try again. If the problem persists, please contact an administrator.'
-                )
+            )
     except requests.exceptions.RequestException:
         await context.send('there was an issue with your registration please try again later. '
                            'If the problem persists please contact an administrator')
@@ -376,7 +406,7 @@ async def get_user(context):
 async def password_instructions(context):
     await context.author.send(
         'Hello, please send me your new desired password like this: `!password yournewpassword`'
-        )
+    )
     await context.author.send(
         'Remember, your password needs to be at least 8 characters long and contain 1 of each of the following:\n'
         'digit, lowercase letter, uppercase letter, special character'
@@ -402,7 +432,7 @@ async def password_reset(context, password=None):
             'No user found associated with this discord account.\n'
             f'Please register at {BASE_URL} and follow instructions to confirm and link your discord.\n'
             'If you believe this to be in error, please contact an administrator.'
-            )
+        )
     elif response.status_code == 200:
         await context.send('Your password has been changed.')
     else:
