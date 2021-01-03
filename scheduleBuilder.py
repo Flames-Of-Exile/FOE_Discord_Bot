@@ -35,7 +35,9 @@ async def get_events():
         announcement = f'Events in the next 24 hours: `(all times are {get_localzone()})`\n'
         for event in events:
             roles.log.warning(event)
-            announcement += f'{event["name"]} `in` {event["game"]} `at` {event["date"]}\n'
+            roles.log.warning(time.timezone)
+            date = datetime.datetime.strptime(event['date'], '%Y-%m-%d %H:%M') + datetime.timedelta(seconds=time.timezone)
+            announcement += f'{event["name"]} `in` {event["game"]} `at` {date}\n'
             if event['note'] != '':
                 announcement += f'`{event["note"]}`\n'
             announcement += '\n'
