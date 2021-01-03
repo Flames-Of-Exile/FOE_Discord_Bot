@@ -4,10 +4,6 @@ import os
 import sys
 import logging
 
-from discord.ext import commands
-import discord
-import nest_asyncio
-
 SERVER = int(os.getenv('SERVER_ID'))
 ANNOUNCEMENTS = int(os.getenv('ANNOUNCEMENTS'))
 ADMIN_ROLE = int(os.getenv('ADMIN_ROLE'))
@@ -23,12 +19,39 @@ DIPLO_CHANNEL = int(os.getenv("DIPLO_CHANNEL"))
 ALLIANCE_ROLE = int(os.getenv("ALLIANCE_ROLE"))
 
 
-class Roles():
-    def __init__(self, bot, auth_token=None, refresh_token=None):
-        self.log = logging.getLogger()
-        self.log.setLevel(logging.INFO)
-        handler = logging.StreamHandler(sys.stdout)
-        self.log.addHandler(handler)
+class Roles(object):
+    _instance = None
+    def __new__(self):
+        if not self._instance:
+            self._instance = super(Roles, self).__new__(self)
+            handler = logging.StreamHandler(sys.stdout)      
+            self.log = logging.getLogger()
+            self.log.setLevel(logging.INFO)
+            self.log.addHandler(handler)
+            self.server = None
+            self.admin_channel = None
+            self.member_channel = None
+            self.member_role = None
+            self.it_role = None
+            self.it_channel = None
+            self.admin_role = None
+            self.recruit_role = None
+            self.recruit_channel = None
+            self.announcements = None
+            self.TOKEN = None
+            self.BOT_PASSWORD = None
+            self.BASE_URL = None
+            self.SITE_TOKEN = None
+            self.VERIFY_SSL = None
+            self.auth_token = None
+            self.refresh_token = None
+            self.subscribable = None
+            self.diplo_role = None
+            self.diplo_channel = None
+            self.alliance_role = None
+        return self._instance
+
+    def setup_definitions(self, bot):
         self.server = bot.get_guild(SERVER)
         self.log.info(self.server)
         self.admin_channel = bot.get_channel(ADMIN_CHANNEL)
@@ -54,8 +77,8 @@ class Roles():
         self.BASE_URL = os.getenv('BASE_URL')
         self.SITE_TOKEN = os.getenv('SITE_TOKEN')
         self.VERIFY_SSL = bool(int(os.getenv('VERIFY_SSL')))
-        self.auth_token = auth_token
-        self.refresh_token = refresh_token
+        self.auth_token = None
+        self.refresh_token = None
         self.subscribable = [self.server.get_role(int(role)) for role in os.getenv('SUBSCRIBABLE').split(',')]
         self.log.info(self.subscribable)
         self.diplo_role = self.server.get_role(DIPLO_ROLE)

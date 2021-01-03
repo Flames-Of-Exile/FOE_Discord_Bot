@@ -1,8 +1,82 @@
+from discord.ext import commands
+
 from logging import log
 import json
 import requests
 
-async def new_app(json, roles):
+from definitions import Roles
+
+roles = Roles()
+
+class NewUserFunctions(commands.Cog):
+    def __init__(self):
+        pass
+
+
+    @commands.command(name='token', help='DM only. Provide token and username to finish website registration.')
+    @commands.dm_only()
+    async def newUser_token_registration(self, context, token=None, username=None):
+        roles.log.info('token_registration called')
+        if token is None or username is None:
+            await context.send(
+                'Token and username are required. Please send them with the following command: `!token yourtoken yourusername`'
+                )
+            return
+        await context.send(f'Processing token: `{token}` with username: `{username}`')
+        member = False
+        target_user = roles.server.get_member(context.author.id)
+        roles.log.info(target_user)
+        if roles.member_role in target_user.roles:
+            member = True
+        data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
+        headers = {'Authorization': roles.auth_token, 'Content-Type': 'application/json'}
+        roles.log.info('sending request to api/confirm')
+        try:
+            response = requests.put(f'{roles.BASE_URL}/api/users/confirm', data=data, headers=headers, verify=roles.VERIFY_SSL)
+            roles.log.info('request sent to api/confirm')
+            user_guild = response.json()['guild']['name']
+            if response.status_code == 200:
+                if member == False:
+                    if user_guild == 'Flames of Exile':
+                        await target_user.add_roles(roles.recruit_role)
+                        await roles.recruit_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
+                        await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recruit_role.mention}
+    your application has been submitted to the guild for review please join in the conversation
+    in the {roles.recruit_channel.mention}''')
+                        await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
+                                        f'for account {username} but does not has not yet been assigned member roles yet')
+                    else:
+                        await roles.diplo_channel.send(f'Guild leaders {context.author.mention} has registered and said {user_guild} would vouch')
+                        await roles.it_channel.send(f'{roles.it_role.mention} has verified their registration with a guild membership of {user_guild}')
+                else:
+                    await context.send('Registration successful.')
+                    await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
+                                    f'for account {username} and has been assigned roles on flamesofexile.com')
+            elif response.status_code == 504:
+                await context.send('You have successfully confirmed your registration please ping "@sysOpp"' +
+                                'in the flames of Exile server to let them know you need privilages')
+            elif response.status_code == 208:
+                await context.send('You have already confirmed your registration')
+            else:
+                await context.send(
+                    'There was an issue with your registration. Please doublecheck the information you provided'
+                    'and try again. If the problem persists, please contact an administrator.'
+                    )
+        except requests.exceptions.RequestException:
+            await context.send('there was an issue with your registration please try again later. '
+                            'If the problem persists please contact an administrator')
+            roles.log.info('exception raised durring request to api/confirm')
+
+    @commands.command(name='register', help='Website registration instructions.')
+    async def newUser_register_instructions(self, context):
+        await context.author.send(
+            f'Hello. If you have not already done so, first start your registration on our site at {roles.BASE_URL}\n'
+            'Otherwise, please send me your token and website username with the following command: `!token yourtoken yourusername`'
+            )
+        await context.send(f'{context.author.mention} Check your DMs for instructions.')
+
+async def new_app(json):
+    roles.log.info('new application receved')
     try:
         referal = 'No'
         if json['referral'] is not False:
@@ -76,62 +150,3 @@ Finally, is there anything else you would like to tell us about yourself?\n
         roles.log.info(f'error when formatting application: {error}')
     except KeyError as error:
         roles.log.info(f'error when formatting application: {error}')
-
-async def token_registration(context, token=None, username=None, roles=None, auth_token=None):
-    roles.log.info('token_registration called')
-    if token is None or username is None:
-        await context.send(
-            'Token and username are required. Please send them with the following command: `!token yourtoken yourusername`'
-            )
-        return
-    await context.send(f'Processing token: `{token}` with username: `{username}`')
-    member = False
-    target_user = roles.server.get_member(context.author.id)
-    roles.log.info(target_user)
-    if roles.member_role in target_user.roles:
-        member = True
-    data = json.dumps({'token': token, 'username': username, 'discord': context.author.id, 'member': member})
-    headers = {'Authorization': auth_token, 'Content-Type': 'application/json'}
-    roles.log.info('sending request to api/confirm')
-    try:
-        response = requests.put(f'{roles.BASE_URL}/api/users/confirm', data=data, headers=headers, verify=roles.VERIFY_SSL)
-        roles.log.info('request sent to api/confirm')
-        user_guild = response.json()['guild']['name']
-        if response.status_code == 200:
-            if member == False:
-                if user_guild == 'Flames of Exile':
-                    await target_user.add_roles(roles.recruit_role)
-                    await roles.recruit_channel.send(f'{target_user.mention} Has landed say Hi everyone!')
-                    await context.send(f'''Welcome to Flames of Exile you have been granted the rank of {roles.recruit_role.mention}
-your application has been submitted to the guild for review please join in the conversation
-in the {roles.recruit_channel.mention}''')
-                    await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
-                                    f'for account {username} but does not has not yet been assigned member roles yet')
-                else:
-                    await roles.diplo_channel.send(f'Guild leaders {context.author.mention} has registered and said {user_guild} would vouch')
-                    await roles.it_channel.send(f'{roles.it_role.mention} has verified their registration with a guild membership of {user_guild}')
-            else:
-                await context.send('Registration successful.')
-                await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
-                                   f'for account {username} and has been assigned roles on flamesofexile.com')
-        elif response.status_code == 504:
-            await context.send('You have successfully confirmed your registration please ping "@sysOpp"' +
-                               'in the flames of Exile server to let them know you need privilages')
-        elif response.status_code == 208:
-            await context.send('You have already confirmed your registration')
-        else:
-            await context.send(
-                'There was an issue with your registration. Please doublecheck the information you provided'
-                'and try again. If the problem persists, please contact an administrator.'
-                )
-    except requests.exceptions.RequestException:
-        await context.send('there was an issue with your registration please try again later. '
-                           'If the problem persists please contact an administrator')
-        roles.log.info('exception raised durring request to api/confirm')
-
-async def register_instructions(context, roles):
-    await context.author.send(
-        f'Hello. If you have not already done so, first start your registration on our site at {roles.BASE_URL}\n'
-        'Otherwise, please send me your token and website username with the following command: `!token yourtoken yourusername`'
-        )
-    await context.send(f'{context.author.mention} Check your DMs for instructions.')
