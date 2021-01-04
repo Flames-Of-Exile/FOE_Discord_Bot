@@ -176,7 +176,7 @@ class AdminFunctions(commands.Cog):
                 context.send('you cannot exile yourself')
                 return
             if (roles.admin_role in context.author.roles) and member is not None:
-                await member.remove_roles(roles.member_role, roles.admin_role, roles.recruit_role)
+                await member.remove_roles(roles.member_role, roles.admin_role, roles.recruit_role, roles.alliance_role, roles.diplo_role)
                 data = json.dumps({'is_active': False, 'role': 'guest'})
                 headers = {'Authorization': roles.auth_token, 'Content-Type': 'application/json'}
                 response = requests.patch(f'{roles.BASE_URL}/api/users/discordRoles/{member.id}', data=data, headers=headers, verify=roles.VERIFY_SSL)

@@ -31,20 +31,14 @@ async def get_events():
         headers = {'Authorization': roles.auth_token, 'Content-Type': 'application/json'}
         response = requests.get(f'{roles.BASE_URL}/api/calendar/getevents', headers=headers, verify=roles.VERIFY_SSL)
         events = response.json()
-        roles.log.warning(events)
-        roles.log.warning(datetime.datetime.now())
         announcement = f'Events in the next 24 hours: `(all times are {get_localzone()})`\n'
         if events != []:
             for event in events:
-                roles.log.warning(event)
-                roles.log.warning(time.timezone)
                 date = datetime.datetime.strptime(event['date'], '%Y-%m-%d %H:%M') - datetime.timedelta(hours=offset)
                 announcement += f'{event["name"]} `in` {event["game"]} `at` {date}\n'
                 if event['note'] != '':
                     announcement += f'`{event["note"]}`\n'
                 announcement += '\n'
             await roles.announcements.send(announcement)
-            return
-        roles.it_channel.send('no events today')
     except JSONDecodeError:
         await roles.it_channel.send('failed to import events, did not receve valid object from api')

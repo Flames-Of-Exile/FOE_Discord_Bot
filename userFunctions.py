@@ -1,14 +1,20 @@
 from logging import log
 import json
+from json import JSONDecodeError
 import requests
+import time, os
+import datetime
+from tzlocal import get_localzone
 
 from discord.ext import commands
 import discord
 import nest_asyncio
 import requests
 
+
 from definitions import Roles
 
+offset = int(os.getenv("TZ_OFFSET"))
 roles = Roles()
 
 class UserFunctions(commands.Cog):
@@ -59,3 +65,28 @@ class UserFunctions(commands.Cog):
             await context.send('Your password has been changed.')
         else:
             await context.send(f'Password reset generated the following error:\n```{response.json()}```')
+
+    @commands.command(name='events', help='FOE guild member only, returns a list of all upcoming events and their times')
+    async def get_all_events(self, context=None):
+        if roles.member_role  not in context.author.roles:
+            context.send('you must be a member of Flames of Exile to see the calendar')
+            return
+        headers = {'Authorization': roles.auth_token, 'Content-Type': 'application/json'}
+        response = requests.get(f'{roles.BASE_URL}/api/calendar/allevents', headers=headers, verify=roles.VERIFY_SSL)
+        events = response.json()
+        announcement = f'Upcoming events: `(all times are {get_localzone()})`\n'
+        try:
+            if events != []:
+                for event in events:
+                    roles.log.warning(event)
+                    roles.log.warning(time.timezone)
+                    date = datetime.datetime.strptime(event['date'], '%Y-%m-%d %H:%M') - datetime.timedelta(hours=offset)
+                    announcement += f'{event["name"]} `in` {event["game"]} `at` {date}\n'
+                    if event['note'] != '':
+                        announcement += f'`{event["note"]}`\n'
+                    announcement += '\n'
+                await context.send(announcement)
+                return
+            context.send('no events in the callendar')
+        except JSONDecodeError:
+            await roles.it_channel.send('failed to import events, did not receve valid object from api')
