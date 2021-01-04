@@ -12,6 +12,7 @@ scheduler = AsyncIOScheduler()
 
 n_time_h = int(os.getenv("EVENT_NOTIFICATION_TIME_HOUR"))
 n_time_m = int(os.getenv("EVENT_NOTIFICATION_TIME_MIN"))
+offset = int(os.getenv("TZ_OFFSET"))
 
 async def scheule_builder():
     time.tzset()
@@ -33,14 +34,17 @@ async def get_events():
         roles.log.warning(events)
         roles.log.warning(datetime.datetime.now())
         announcement = f'Events in the next 24 hours: `(all times are {get_localzone()})`\n'
-        for event in events:
-            roles.log.warning(event)
-            roles.log.warning(time.timezone)
-            date = datetime.datetime.strptime(event['date'], '%Y-%m-%d %H:%M') + datetime.timedelta(seconds=time.timezone)
-            announcement += f'{event["name"]} `in` {event["game"]} `at` {date}\n'
-            if event['note'] != '':
-                announcement += f'`{event["note"]}`\n'
-            announcement += '\n'
-        await roles.announcements.send(announcement)
+        if events != []:
+            for event in events:
+                roles.log.warning(event)
+                roles.log.warning(time.timezone)
+                date = datetime.datetime.strptime(event['date'], '%Y-%m-%d %H:%M') - datetime.timedelta(hours=offset)
+                announcement += f'{event["name"]} `in` {event["game"]} `at` {date}\n'
+                if event['note'] != '':
+                    announcement += f'`{event["note"]}`\n'
+                announcement += '\n'
+            await roles.announcements.send(announcement)
+            return
+        roles.it_channel.send('no events today')
     except JSONDecodeError:
-        await roles.it_channel.send('failed to import events, did not receve any from api')
+        await roles.it_channel.send('failed to import events, did not receve valid object from api')
