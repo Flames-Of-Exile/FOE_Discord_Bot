@@ -1,5 +1,6 @@
 from aiohttp import web
 from eventemitter import EventEmitter
+from definitions import Roles
 
 class WebHookListener(EventEmitter):
 
@@ -12,6 +13,8 @@ class WebHookListener(EventEmitter):
         await site.start()
 
 
+roles = Roles()
+
 listener = WebHookListener()
 
 routes = web.RouteTableDef()
@@ -21,13 +24,13 @@ async def new_app(req):
     listener.emit("app", await req.json())
     return web.Response(text='ok')
 
-# @routes.get('/bot')
-# async def get_root(req):
-#     listener.emit('get')
-#     return web.Response(text='ok')
+@routes.post('/bot/guild')
+async def update_guild_tag(req):
+    listener.emit("tagUpdate", await req.json())
+    return web.Response(text='guild updated')
 
-
-# @routes.post('/bot')
-# async def post_root(req):
-#     listener.emit('post', await req.json())
-#     return web.Response(text='ok')
+@routes.post('/bot/updateUser')
+async def update_user(req):
+    roles.log.warning('bot receved user update')
+    listener.emit("userUpdate", await req.json())
+    return web.Response(text='user updated')

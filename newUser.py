@@ -48,6 +48,7 @@ class NewUserFunctions(commands.Cog):
                     else:
                         await roles.diplo_channel.send(f'Guild leaders {context.author.mention} has registered and said {user_guild} would vouch')
                         await roles.it_channel.send(f'{roles.it_role.mention} has verified their registration with a guild membership of {user_guild}')
+                        await context.send('Your registration has been verified and your guild leader has been notified')
                 else:
                     await context.send('Registration successful.')
                     await roles.admin_channel.send(f'{roles.it_role.mention} {context.author.mention} has verified their registration ' +
