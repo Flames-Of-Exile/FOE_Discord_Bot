@@ -4,7 +4,7 @@ import nest_asyncio
 import requests
 import json
 
-from helperfunctions import find_member
+from helperfunctions import find_member, set_tag
 from definitions import Roles
 
 HTTPException = discord.HTTPException
@@ -31,6 +31,7 @@ class Diplomat(commands.Cog):
         response = requests.patch(f'{roles.BASE_URL}/api/users/alliance/vouch', data=data, headers=headers, verify=roles.VERIFY_SSL)
         if response.status_code == 200:
             await target_user.add_roles(roles.alliance_role)
+            await set_tag(target_user, response.json()['guild_tag'])
             roles.log.info(roles.alliance_role)
             await context.send(f'{target_user.mention} has been vouched for by {diplo.mention}')
             await roles.admin_channel.send(f'{roles.admin_role.mention}: {target_user.mention} has been granted roles by {diplo.mention}')
@@ -57,6 +58,7 @@ class Diplomat(commands.Cog):
         response = requests.patch(f'{roles.BASE_URL}/api/users/alliance/endvouch', data=data, headers=headers, verify=roles.VERIFY_SSL)
         if response.status_code == 200:
             await target_user.remove_roles(roles.alliance_role)
+            await set_tag(target_user)
             await context.send(f'{target_user.mention} is no longer being vouched for by {diplo.mention}')
             await roles.admin_channel.send(f'{roles.admin_role.mention}: {target_user.mention} has had their roles striped by {diplo.mention}')
         elif response.status_code == 403:
